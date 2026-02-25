@@ -16,6 +16,8 @@ env:
 permissions:
   id-token: write
   contents: read
+  pages: write
+  actions: read
 
 jobs:
   # ============================================================
@@ -53,6 +55,10 @@ jobs:
     name: Deploy Backend
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      api-endpoint: ${{ steps.outputs.outputs.api-endpoint }}
+      user-pool-id: ${{ steps.outputs.outputs.user-pool-id }}
+      client-id: ${{ steps.outputs.outputs.client-id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -85,3 +91,56 @@ jobs:
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --parameter-overrides Environment=dev
+
+      - name: Get Stack Outputs
+        id: outputs
+        run: |
+          echo "api-endpoint=$(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query "Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue" --output text)" >> $GITHUB_OUTPUT
+          echo "user-pool-id=$(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)" >> $GITHUB_OUTPUT
+          echo "client-id=$(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)" >> $GITHUB_OUTPUT
+
+  # ============================================================
+  # JOB 3: Build Frontend for GitHub Pages
+  # ============================================================
+  build-frontend:
+    name: Build Frontend
+    needs: deploy-backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build Frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ needs.deploy-backend.outputs.api-endpoint }}
+          VITE_USER_POOL_ID: ${{ needs.deploy-backend.outputs.user-pool-id }}
+          VITE_USER_POOL_CLIENT_ID: ${{ needs.deploy-backend.outputs.client-id }}
+          VITE_AWS_REGION: ${{ env.AWS_REGION }}
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  # ============================================================
+  # JOB 4: Deploy to GitHub Pages
+  # ============================================================
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
