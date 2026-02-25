@@ -60,12 +60,12 @@ export default function TimeLockOverlay({ deadline, onUnlock }: TimeLockOverlayP
           { value: countdown.seconds, label: 'Seconds' },
         ].map(({ value, label }) => (
           <div key={label} className="flex flex-col items-center">
-            <div className="bg-white/10 backdrop-blur rounded-xl px-4 py-3 min-w-[4rem] border border-white/10">
+            <div className="bg-white/10 backdrop-blur rounded-xl px-4 py-3 min-w-[4rem] min-h-[4rem] border border-white/10 flex items-center justify-center">
               <span className="text-3xl font-mono font-bold tabular-nums">
                 {String(value).padStart(2, '0')}
               </span>
             </div>
-            <span className="text-xs text-gray-400 mt-1.5 uppercase tracking-wider">{label}</span>
+            <span className="text-xs text-gray-400 mt-1.5 uppercase tracking-wider text-center">{label}</span>
           </div>
         ))}
       </div>
