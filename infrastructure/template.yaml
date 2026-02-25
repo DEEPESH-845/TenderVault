@@ -127,11 +127,9 @@ Resources:
   TvAuthorizerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/functions/authorizer/
-      Handler: index.handler
+      CodeUri: ../backend/
+      Handler: functions/authorizer/index.handler
       Role: !Ref LabRoleArn
-      Layers:
-        - !Ref SharedLayer
 
   TvAuthorizerPermission:
     Type: AWS::Lambda::Permission
@@ -144,8 +142,8 @@ Resources:
   TvCreateTenderFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/functions/create-tender/
-      Handler: index.handler
+      CodeUri: ../backend/
+      Handler: functions/create-tender/index.handler
       Role: !Ref LabRoleArn
       Events:
         Api:
@@ -157,8 +155,8 @@ Resources:
   TvListTendersFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/functions/list-tenders/
-      Handler: index.handler
+      CodeUri: ../backend/
+      Handler: functions/list-tenders/index.handler
       Role: !Ref LabRoleArn
       Events:
         Api:
@@ -170,8 +168,8 @@ Resources:
   TvGetTenderFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/functions/get-tender/
-      Handler: index.handler
+      CodeUri: ../backend/
+      Handler: functions/get-tender/index.handler
       Role: !Ref LabRoleArn
       Events:
         Api:
@@ -183,8 +181,8 @@ Resources:
   TvGenerateUploadUrlFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/functions/generate-upload-url/
-      Handler: index.handler
+      CodeUri: ../backend/
+      Handler: functions/generate-upload-url/index.handler
       Role: !Ref LabRoleArn
       Events:
         Api:
@@ -196,8 +194,8 @@ Resources:
   TvConfirmUploadFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/functions/confirm-upload/
-      Handler: index.handler
+      CodeUri: ../backend/
+      Handler: functions/confirm-upload/index.handler
       Timeout: 30
       Role: !Ref LabRoleArn
 
@@ -212,8 +210,8 @@ Resources:
   TvGenerateDownloadUrlFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/functions/generate-download-url/
-      Handler: index.handler
+      CodeUri: ../backend/
+      Handler: functions/generate-download-url/index.handler
       Role: !Ref LabRoleArn
       Events:
         Api:
@@ -225,8 +223,8 @@ Resources:
   TvListBidsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/functions/list-bids/
-      Handler: index.handler
+      CodeUri: ../backend/
+      Handler: functions/list-bids/index.handler
       Role: !Ref LabRoleArn
       Events:
         Api:
@@ -238,8 +236,8 @@ Resources:
   TvListVersionsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/functions/list-versions/
-      Handler: index.handler
+      CodeUri: ../backend/
+      Handler: functions/list-versions/index.handler
       Role: !Ref LabRoleArn
       Events:
         Api:
@@ -251,9 +249,8 @@ Resources:
   TvRestoreVersionFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/functions/restore-version/
-      Handler: index.handler
-      Timeout: 30
+      CodeUri: ../backend/
+      Handler: functions/restore-version/index.handler
       Role: !Ref LabRoleArn
       Events:
         Api:
@@ -265,8 +262,8 @@ Resources:
   TvListAuditLogsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/functions/list-audit-logs/
-      Handler: index.handler
+      CodeUri: ../backend/
+      Handler: functions/list-audit-logs/index.handler
       Role: !Ref LabRoleArn
       Events:
         Api:
