@@ -178,6 +178,19 @@ Resources:
             Path: /tenders/{tenderId}
             Method: GET
 
+  TvDeleteTenderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/
+      Handler: functions/delete-tender/index.handler
+      Role: !Ref LabRoleArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /tenders/{tenderId}
+            Method: DELETE
+
   TvGenerateUploadUrlFunction:
     Type: AWS::Serverless::Function
     Properties:

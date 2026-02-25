@@ -64,6 +64,10 @@ export async function getTender(tenderId: string): Promise<Tender> {
     return data;
 }
 
+export async function deleteTender(tenderId: string): Promise<void> {
+    await api.delete(`/tenders/${tenderId}`);
+}
+
 // ===== Bid Endpoints =====
 
 export async function generateUploadUrl(
