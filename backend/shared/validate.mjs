@@ -27,11 +27,8 @@ export function validateTenderBody(body) {
     const deadlineDate = new Date(body.deadline);
     if (isNaN(deadlineDate.getTime())) {
       errors.push({ field: 'deadline', message: 'Deadline must be a valid ISO 8601 datetime' });
-    } else {
-      const minDeadline = Date.now() + (60 * 60 * 1000); // now + 1 hour
-      if (deadlineDate.getTime() <= minDeadline) {
-        errors.push({ field: 'deadline', message: 'Deadline must be at least 1 hour in the future' });
-      }
+    } else if (deadlineDate.getTime() <= Date.now()) {
+      errors.push({ field: 'deadline', message: 'Deadline must be in the future' });
     }
   }
 

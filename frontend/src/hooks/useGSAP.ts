@@ -10,8 +10,9 @@ export function useGSAP(
 
   useEffect(() => {
     let ctx: gsap.Context;
-    ctx = gsap.context(() => {
-      callback(ctx);
+    ctx = gsap.context((context) => {
+      ctx = context as gsap.Context;
+      callback(context as gsap.Context);
     }, scope?.current || undefined);
     ctxRef.current = ctx;
 

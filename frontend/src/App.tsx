@@ -100,8 +100,7 @@ function LoginPage() {
 
            <div
              ref={cardRef}
-             className="w-full max-w-[460px] p-6 sm:p-8 rounded-xl lg:shadow-2xl border border-slate-200 lg:border-slate-800/50 flex flex-col items-center card-glass lg:bg-white/[0.03]"
-             style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+             className="w-full max-w-[460px] p-6 sm:p-8 rounded-xl bg-white lg:bg-white/[0.03] lg:shadow-2xl border border-gray-200 lg:border-slate-800/50 flex flex-col items-center lg:backdrop-blur-2xl"
            >
               <div className="mb-6 w-full text-center lg:text-left">
                  <h2 className="text-2xl font-bold text-slate-900 lg:text-white mb-2">Welcome Back</h2>
@@ -109,16 +108,7 @@ function LoginPage() {
               </div>
 
               {/* AWS AMPLIFY AUTHENTICATOR WIDGET */}
-              <div
-                className="aws-amplify-wrapper w-full flex justify-center"
-                style={{
-                  '--amplify-components-authenticator-router-box-shadow': 'none',
-                  '--amplify-components-authenticator-router-border-width': '0',
-                  '--amplify-colors-background-primary': 'transparent',
-                  '--amplify-colors-background-secondary': 'transparent',
-                  '--amplify-colors-font-primary': 'inherit'
-                } as React.CSSProperties}
-              >
+              <div className="aws-amplify-wrapper w-full flex justify-center">
                  <Authenticator
                    loginMechanisms={['email']}
                    signUpAttributes={['email']}

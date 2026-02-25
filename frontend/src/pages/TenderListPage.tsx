@@ -169,7 +169,7 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
                     onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                     required
                   />
-                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Must be at least 1 hour in the future</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Must be in the future</p>
                 </div>
 
                 {createError && (
