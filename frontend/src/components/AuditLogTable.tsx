@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import type { AuditEvent } from '../services/types';
 import { useStagger } from '../hooks/useStagger';
@@ -79,9 +79,8 @@ export default function AuditLogTable({ events, loading, hasMore, onLoadMore }: 
           </thead>
           <tbody ref={tbodyRef} className="divide-y divide-gray-50 dark:divide-slate-800">
             {events.map((event) => (
-              <>
+              <Fragment key={event.auditId}>
                 <tr
-                  key={event.auditId}
                   className="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                   onClick={() => setExpandedRow(expandedRow === event.auditId ? null : event.auditId)}
                 >
@@ -125,7 +124,7 @@ export default function AuditLogTable({ events, loading, hasMore, onLoadMore }: 
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>

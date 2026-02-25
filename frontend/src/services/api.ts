@@ -37,7 +37,7 @@ api.interceptors.response.use(
         if (error.response?.status === 401) {
             // Unauthorized — force sign out
             await signOut();
-            window.location.href = '/';
+            window.location.href = import.meta.env.BASE_URL || '/';
         }
         return Promise.reject(error);
     }
