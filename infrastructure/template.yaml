@@ -130,6 +130,8 @@ Resources:
       CodeUri: ../backend/functions/authorizer/
       Handler: index.handler
       Role: !Ref LabRoleArn
+      Layers:
+        - !Ref SharedLayer
 
   TvAuthorizerPermission:
     Type: AWS::Lambda::Permission
