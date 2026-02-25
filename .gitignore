@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+DOCS/
 
 # AWS SAM
 .aws-sam/
