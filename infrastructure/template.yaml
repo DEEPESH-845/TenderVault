@@ -131,6 +131,14 @@ Resources:
       Handler: index.handler
       Role: !Ref LabRoleArn
 
+  TvAuthorizerPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt TvAuthorizerFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ServerlessHttpApi}/*'
+
   TvCreateTenderFunction:
     Type: AWS::Serverless::Function
     Properties:
