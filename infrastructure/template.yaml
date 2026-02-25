@@ -184,6 +184,11 @@ Resources:
       CodeUri: ../backend/
       Handler: functions/delete-tender/index.handler
       Role: !Ref LabRoleArn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TendersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AuditLogTable
       Events:
         Api:
           Type: HttpApi
