@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { differenceInSeconds } from 'date-fns';
+import { gsap } from '../lib/gsap';
 
 interface TimeLockOverlayProps {
   deadline: string;
@@ -9,6 +10,42 @@ interface TimeLockOverlayProps {
 export default function TimeLockOverlay({ deadline, onUnlock }: TimeLockOverlayProps) {
   const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isExpired, setIsExpired] = useState(false);
+  const lockIconRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  // Lock icon breathing glow animation
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const tweens: gsap.core.Tween[] = [];
+
+    if (lockIconRef.current) {
+      tweens.push(
+        gsap.to(lockIconRef.current, {
+          boxShadow: '0 0 30px rgba(255,255,255,0.2), 0 0 60px rgba(13,127,242,0.15)',
+          duration: 2,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+        })
+      );
+    }
+    if (overlayRef.current) {
+      tweens.push(
+        gsap.to(overlayRef.current, {
+          backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(13,127,242,0.15) 0%, transparent 70%)',
+          duration: 3,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+        })
+      );
+    }
+
+    return () => {
+      tweens.forEach(t => t.kill());
+    };
+  }, []);
 
   useEffect(() => {
     const deadlineDate = new Date(deadline);
@@ -38,9 +75,9 @@ export default function TimeLockOverlay({ deadline, onUnlock }: TimeLockOverlayP
   if (isExpired) return null;
 
   return (
-    <div className="absolute inset-0 z-30 bg-gray-900/80 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center text-white">
+    <div ref={overlayRef} className="absolute inset-0 z-30 bg-gray-900/80 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center text-white">
       {/* Lock Icon */}
-      <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mb-6 animate-lock-pulse ring-2 ring-white/20">
+      <div ref={lockIconRef} className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mb-6 ring-2 ring-white/20">
         <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
         </svg>

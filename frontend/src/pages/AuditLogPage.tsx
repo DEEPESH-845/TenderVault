@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { listAuditLogs, getErrorMessage } from '../services/api';
 import type { AuditEvent } from '../services/types';
 import AuditLogTable from '../components/AuditLogTable';
+import AnimatedPage from '../components/AnimatedPage';
+import ScrollReveal from '../components/ScrollReveal';
 
 export default function AuditLogPage() {
   const [events, setEvents] = useState<AuditEvent[]>([]);
@@ -69,7 +71,7 @@ export default function AuditLogPage() {
   ];
 
   return (
-    <div>
+    <AnimatedPage>
       {/* Header */}
       <div className="mb-8">
         <h1 className="page-header">Audit Trail</h1>
@@ -77,59 +79,63 @@ export default function AuditLogPage() {
       </div>
 
       {/* Filters */}
-      <form onSubmit={handleSearch} className="card mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-          <div>
-            <label className="label">User ID</label>
-            <input
-              type="text"
-              className="input"
-              placeholder="Filter by user..."
-              value={filters.userId}
-              onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
-            />
+      <ScrollReveal>
+        <form onSubmit={handleSearch} className="card mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div>
+              <label className="label">User ID</label>
+              <input
+                type="text"
+                className="input"
+                placeholder="Filter by user..."
+                value={filters.userId}
+                onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="label">Tender ID</label>
+              <input
+                type="text"
+                className="input"
+                placeholder="Filter by tender..."
+                value={filters.tenderId}
+                onChange={(e) => setFilters({ ...filters, tenderId: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="label">Action</label>
+              <select
+                className="input"
+                value={filters.action}
+                onChange={(e) => setFilters({ ...filters, action: e.target.value })}
+              >
+                <option value="">All Actions</option>
+                {actionOptions.map(action => (
+                  <option key={action} value={action}>{action.replace(/_/g, ' ')}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <button type="submit" className="btn-primary flex-1">
+                Search
+              </button>
+              <button type="button" onClick={handleClearFilters} className="btn-secondary">
+                Clear
+              </button>
+            </div>
           </div>
-          <div>
-            <label className="label">Tender ID</label>
-            <input
-              type="text"
-              className="input"
-              placeholder="Filter by tender..."
-              value={filters.tenderId}
-              onChange={(e) => setFilters({ ...filters, tenderId: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="label">Action</label>
-            <select
-              className="input"
-              value={filters.action}
-              onChange={(e) => setFilters({ ...filters, action: e.target.value })}
-            >
-              <option value="">All Actions</option>
-              {actionOptions.map(action => (
-                <option key={action} value={action}>{action.replace(/_/g, ' ')}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex gap-2">
-            <button type="submit" className="btn-primary flex-1">
-              Search
-            </button>
-            <button type="button" onClick={handleClearFilters} className="btn-secondary">
-              Clear
-            </button>
-          </div>
-        </div>
-      </form>
+        </form>
+      </ScrollReveal>
 
       {/* Results */}
-      <AuditLogTable
-        events={events}
-        loading={loading}
-        hasMore={!!nextToken}
-        onLoadMore={() => fetchLogs(nextToken)}
-      />
-    </div>
+      <ScrollReveal delay={0.1}>
+        <AuditLogTable
+          events={events}
+          loading={loading}
+          hasMore={!!nextToken}
+          onLoadMore={() => fetchLogs(nextToken)}
+        />
+      </ScrollReveal>
+    </AnimatedPage>
   );
 }

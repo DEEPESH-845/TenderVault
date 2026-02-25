@@ -2,9 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== CSS CUSTOM PROPERTIES FOR ANIMATION TIMING ===== */
+:root {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --duration-entrance: 0.7s;
+  --duration-micro: 0.2s;
+}
+
 @layer base {
   body {
     @apply text-gray-900 bg-gradient-to-br from-slate-50 via-white to-vault-50 min-h-screen transition-colors duration-300;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   .dark body {
@@ -30,6 +40,10 @@
   /* ===== CARDS & CONTAINERS ===== */
   .card {
     @apply bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-lg shadow-gray-200/50 p-6 transition-all duration-300 hover:shadow-xl hover:shadow-gray-300/50 hover:border-gray-200 dark:bg-slate-900/60 dark:border-slate-800/80 dark:shadow-black/40 dark:hover:shadow-black/60 dark:hover:border-slate-700;
+  }
+
+  .card-glass {
+    @apply bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl;
   }
 
   /* ===== BADGES ===== */
@@ -67,7 +81,15 @@
   }
 
   .skeleton {
-    @apply animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded-xl dark:from-slate-800 dark:via-slate-700 dark:to-slate-800;
+    @apply rounded-xl;
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  .dark .skeleton {
+    background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+    background-size: 200% 100%;
   }
 
   /* ===== TABLES ===== */
@@ -80,26 +102,96 @@
   }
 }
 
-/* Amplify Auth Overrides for Premium Split-Screen Design */
+/* ===== 3D TILT HOVER UTILITY ===== */
+.tilt-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.3s var(--ease-out-quart);
+}
+
+.tilt-card:hover {
+  transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) scale(1.01);
+}
+
+/* ===== GRADIENT SHIMMER FOR PROGRESS ===== */
+.progress-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 1.5s linear infinite;
+  background-size: 200% 100%;
+}
+
+/* ===== NOISE TEXTURE OVERLAY ===== */
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ===== SVG CHECKMARK DRAW ANIMATION ===== */
+.checkmark-draw {
+  stroke-dasharray: 50;
+  stroke-dashoffset: 50;
+  animation: drawCheck 0.5s var(--ease-out-expo) 0.2s forwards;
+}
+
+@keyframes drawCheck {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ===== TABULAR NUMS FOR COUNTDOWNS ===== */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .tilt-card:hover {
+    transform: none;
+  }
+}
+
+/* ===== Amplify Auth Overrides for Premium Split-Screen Design ===== */
 [data-amplify-authenticator] {
-  /* Remove default boxes and backgrounds */
   --amplify-components-authenticator-router-box-shadow: none;
   --amplify-components-authenticator-router-border-width: 0;
   --amplify-colors-background-primary: transparent;
   --amplify-colors-background-secondary: transparent;
 
-  /* typography */
   --amplify-colors-font-primary: white;
   --amplify-colors-font-secondary: #94a3b8;
-  /* text-slate-400 */
   --amplify-colors-font-tertiary: #cbd5e1;
-  /* text-slate-300 */
   --amplify-colors-font-interactive: #0d7ff2;
 
-  /* Layout and Spacing */
   --amplify-space-medium: 1.25rem;
 
-  /* Input fields (Glassmorphism feel) */
   --amplify-components-fieldcontrol-border-color: rgba(255, 255, 255, 0.1);
   --amplify-components-fieldcontrol-border-width: 1px;
   --amplify-components-fieldcontrol-border-radius: 0.5rem;
@@ -107,7 +199,6 @@
   --amplify-components-fieldcontrol-color: white;
   --amplify-components-fieldcontrol-padding-block: 0.875rem;
 
-  /* Primary Button (Authorize Access) */
   --amplify-colors-brand-primary-80: #0d7ff2;
   --amplify-colors-brand-primary-90: #0b6ed1;
   --amplify-colors-brand-primary-100: #0a5eb5;
@@ -117,7 +208,6 @@
   --amplify-components-button-primary-hover-background-color: #0b6ed1;
   --amplify-components-button-primary-color: white;
 
-  /* Tabs (Sign In / Create Account) */
   --amplify-components-tabs-item-color: #94a3b8;
   --amplify-components-tabs-item-active-color: white;
   --amplify-components-tabs-item-active-border-color: #0d7ff2;
@@ -128,12 +218,10 @@
   width: 100%;
 }
 
-/* Force hiding the default AWS Amplify logo/header area if it exists */
 .amplify-authenticator__header {
   display: none !important;
 }
 
-/* Fix input text selection color in dark mode */
 .amplify-input::selection {
   background: rgba(13, 127, 242, 0.3);
 }

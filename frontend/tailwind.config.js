@@ -40,6 +40,9 @@ export default {
         'lock-pulse': 'lockPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'slide-in-right': 'slideInRight 0.3s ease-out',
         'fade-in': 'fadeIn 0.2s ease-out',
+        'shimmer': 'shimmer 2s linear infinite',
+        'glow-pulse': 'glowPulse 3s ease-in-out infinite',
+        'float': 'float 8s ease-in-out infinite',
       },
       keyframes: {
         lockPulse: {
@@ -54,6 +57,21 @@ export default {
           '0%': { opacity: 0 },
           '100%': { opacity: 1 },
         },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+        glowPulse: {
+          '0%, 100%': { opacity: 0.4, transform: 'scale(1)' },
+          '50%': { opacity: 0.8, transform: 'scale(1.05)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translate(-50%, -50%) translateY(0px)' },
+          '50%': { transform: 'translate(-50%, -50%) translateY(-30px)' },
+        },
+      },
+      backdropBlur: {
+        xs: '2px',
       },
     },
   },

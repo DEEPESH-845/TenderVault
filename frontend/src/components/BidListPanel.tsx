@@ -3,6 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { generateDownloadUrl, getErrorMessage } from '../services/api';
 import type { Bid, UserInfo } from '../services/types';
 import VersionHistoryDrawer from './VersionHistoryDrawer';
+import { useStagger } from '../hooks/useStagger';
 
 interface BidListPanelProps {
   tenderId: string;
@@ -15,6 +16,7 @@ export default function BidListPanel({ tenderId, bids, userInfo, onRefresh }: Bi
   const [downloadingBid, setDownloadingBid] = useState<string | null>(null);
   const [versionDrawer, setVersionDrawer] = useState<{ tenderId: string; bidderId: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const tbodyRef = useStagger<HTMLTableSectionElement>(':scope > tr', [bids.length]);
 
   const handleDownload = async (bidderId: string) => {
     setDownloadingBid(bidderId);
@@ -37,7 +39,7 @@ export default function BidListPanel({ tenderId, bids, userInfo, onRefresh }: Bi
 
   if (bids.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-12 animate-fade-in">
         <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
           <svg className="w-8 h-8 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9.75m3 0l-3-3m3 3l-3 3M5.25 21h13.5A2.25 2.25 0 0021 18.75V5.25A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25v13.5A2.25 2.25 0 005.25 21z" />
@@ -71,7 +73,7 @@ export default function BidListPanel({ tenderId, bids, userInfo, onRefresh }: Bi
               <th className="table-header text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
+          <tbody ref={tbodyRef} className="divide-y divide-gray-50 dark:divide-slate-800">
             {bids.map((bid) => (
               <tr key={bid.bidderId} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 transition-colors">
                 <td className="table-cell font-medium text-gray-900 dark:text-white">

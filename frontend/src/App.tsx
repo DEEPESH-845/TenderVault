@@ -1,7 +1,12 @@
+import { useRef } from 'react';
 import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react';
 import { BrowserRouter } from 'react-router-dom';
 import { AppRoutes } from './routes';
 import './services/auth'; // Initialize Amplify config
+import GridBackground from './components/GridBackground';
+import AnimatedCounter from './components/AnimatedCounter';
+import { useGSAP } from './hooks/useGSAP';
+import { gsap } from './lib/gsap';
 
 function App() {
   const { route, signOut, user } = useAuthenticator((context) => [context.route, context.user]);
@@ -22,6 +27,34 @@ function App() {
   // =========================================================================
   // 2) UNAUTHENTICATED STATE: Render the Premium Split-Screen Login Layout
   // =========================================================================
+  return <LoginPage />;
+}
+
+function LoginPage() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    // Hero text staggered entrance
+    const heroElements = heroRef.current?.querySelectorAll('[data-animate]');
+    if (heroElements?.length) {
+      gsap.fromTo(
+        heroElements,
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 0.8, stagger: 0.12, ease: 'power3.out', delay: 0.2 }
+      );
+    }
+
+    // Login card glassmorphism entrance
+    if (cardRef.current) {
+      gsap.fromTo(
+        cardRef.current,
+        { opacity: 0, y: 30, scale: 0.97 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'power3.out', delay: 0.4 }
+      );
+    }
+  }, []);
+
   return (
     <div className="bg-[#101922] font-sans text-slate-100 min-h-screen flex flex-col pt-0 relative">
       {/* HEADER */}
@@ -38,29 +71,37 @@ function App() {
 
       {/* MAIN SPLIT SCREEN */}
       <main className="flex-1 flex flex-col lg:flex-row relative">
-        
+
         {/* LEFT NAVY/CYAN HERO */}
         <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden" style={{ background: 'radial-gradient(circle at top right, #0d7ff233, transparent), linear-gradient(135deg, #101922 0%, #0a2e52 100%)' }}>
+          <GridBackground />
           <div className="absolute inset-0 opacity-20 pointer-events-none">
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#0d7ff2] rounded-full blur-[120px]"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-500 rounded-full blur-[120px]"></div>
           </div>
-          <div className="relative z-10 p-12 max-w-xl">
-             <h1 className="text-5xl font-bold text-white mb-6 leading-[1.1]">Enterprise Procurement, Secured.</h1>
-             <p className="text-slate-300 text-xl leading-relaxed">The unified standard for high-stakes government contracting and digital asset custody.</p>
-             <div className="mt-12 flex gap-8">
-                <div className="flex flex-col"><span className="text-3xl font-bold text-[#0d7ff2]">99.9%</span><span className="text-slate-400 text-sm uppercase tracking-widest mt-1">Uptime</span></div>
-                <div className="flex flex-col"><span className="text-3xl font-bold text-[#0d7ff2]">AES-256</span><span className="text-slate-400 text-sm uppercase tracking-widest mt-1">Encryption</span></div>
+          <div ref={heroRef} className="relative z-10 p-12 max-w-xl">
+             <h1 data-animate className="text-5xl font-bold text-white mb-6 leading-[1.1]">Enterprise Procurement, Secured.</h1>
+             <p data-animate className="text-slate-300 text-xl leading-relaxed">The unified standard for high-stakes government contracting and digital asset custody.</p>
+             <div data-animate className="mt-12 flex gap-8">
+                <div className="flex flex-col">
+                  <AnimatedCounter value={99.9} suffix="%" decimals={1} duration={2.5} className="text-3xl font-bold text-[#0d7ff2] tabular-nums" />
+                  <span className="text-slate-400 text-sm uppercase tracking-widest mt-1">Uptime</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-3xl font-bold text-[#0d7ff2]">AES-256</span>
+                  <span className="text-slate-400 text-sm uppercase tracking-widest mt-1">Encryption</span>
+                </div>
              </div>
           </div>
         </div>
 
         {/* RIGHT LOGIN CONTAINER - Perfect Visual Centering */}
         <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-white lg:bg-[#101922] w-full min-h-screen">
-           
-           <div 
-             className="w-full max-w-[460px] p-6 sm:p-8 rounded-xl lg:shadow-2xl border border-slate-200 lg:border-slate-800/50 flex flex-col items-center"
-             style={{ background: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+
+           <div
+             ref={cardRef}
+             className="w-full max-w-[460px] p-6 sm:p-8 rounded-xl lg:shadow-2xl border border-slate-200 lg:border-slate-800/50 flex flex-col items-center card-glass lg:bg-white/[0.03]"
+             style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
            >
               <div className="mb-6 w-full text-center lg:text-left">
                  <h2 className="text-2xl font-bold text-slate-900 lg:text-white mb-2">Welcome Back</h2>
@@ -68,10 +109,10 @@ function App() {
               </div>
 
               {/* AWS AMPLIFY AUTHENTICATOR WIDGET */}
-              <div 
-                className="aws-amplify-wrapper w-full flex justify-center" 
-                style={{ 
-                  '--amplify-components-authenticator-router-box-shadow': 'none', 
+              <div
+                className="aws-amplify-wrapper w-full flex justify-center"
+                style={{
+                  '--amplify-components-authenticator-router-box-shadow': 'none',
                   '--amplify-components-authenticator-router-border-width': '0',
                   '--amplify-colors-background-primary': 'transparent',
                   '--amplify-colors-background-secondary': 'transparent',

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import type { AuditEvent } from '../services/types';
+import { useStagger } from '../hooks/useStagger';
 
 interface AuditLogTableProps {
   events: AuditEvent[];
@@ -11,6 +12,7 @@ interface AuditLogTableProps {
 
 export default function AuditLogTable({ events, loading, hasMore, onLoadMore }: AuditLogTableProps) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const tbodyRef = useStagger<HTMLTableSectionElement>(':scope > tr', [events.length]);
 
   const resultColors: Record<string, string> = {
     SUCCESS: 'text-emerald-700 bg-emerald-50 ring-1 ring-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 dark:ring-emerald-500/20',
@@ -75,7 +77,7 @@ export default function AuditLogTable({ events, loading, hasMore, onLoadMore }: 
               <th className="table-header">Result</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
+          <tbody ref={tbodyRef} className="divide-y divide-gray-50 dark:divide-slate-800">
             {events.map((event) => (
               <>
                 <tr
@@ -113,7 +115,7 @@ export default function AuditLogTable({ events, loading, hasMore, onLoadMore }: 
                 {expandedRow === event.auditId && (
                   <tr key={`${event.auditId}-detail`}>
                     <td colSpan={6} className="px-4 py-3 bg-gray-50/80 dark:bg-slate-800/50">
-                      <div className="text-xs space-y-1">
+                      <div className="text-xs space-y-1 animate-fade-in">
                         <p><strong className="text-gray-500 dark:text-slate-400">Audit ID:</strong> <span className="font-mono dark:text-slate-300">{event.auditId}</span></p>
                         <p><strong className="text-gray-500 dark:text-slate-400">Full Timestamp:</strong> <span className="dark:text-slate-300">{event.timestamp}</span></p>
                         <p><strong className="text-gray-500 dark:text-slate-400">IP Address:</strong> <span className="dark:text-slate-300">{event.ipAddress}</span></p>
@@ -143,7 +145,7 @@ export default function AuditLogTable({ events, loading, hasMore, onLoadMore }: 
       )}
 
       {events.length === 0 && !loading && (
-        <div className="text-center py-12 text-gray-500 dark:text-slate-400">
+        <div className="text-center py-12 text-gray-500 dark:text-slate-400 animate-fade-in">
           <p className="text-sm">No audit events found</p>
         </div>
       )}

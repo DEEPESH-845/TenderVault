@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { listVersions, restoreVersion, getErrorMessage } from '../services/api';
 import type { BidVersion } from '../services/types';
+import { useStagger } from '../hooks/useStagger';
+import { gsap } from '../lib/gsap';
 
 interface VersionHistoryDrawerProps {
   tenderId: string;
@@ -16,9 +18,24 @@ export default function VersionHistoryDrawer({ tenderId, bidderId, onClose, onRe
   const [restoring, setRestoring] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<string | null>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const versionListRef = useStagger<HTMLDivElement>(':scope > div', [versions.length]);
 
   useEffect(() => {
     fetchVersions();
+
+    // GSAP entrance animation
+    if (backdropRef.current) {
+      gsap.fromTo(backdropRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out' });
+    }
+    if (drawerRef.current) {
+      gsap.fromTo(
+        drawerRef.current,
+        { x: '100%' },
+        { x: '0%', duration: 0.5, ease: 'power3.out' }
+      );
+    }
   }, [tenderId, bidderId]);
 
   const fetchVersions = async () => {
@@ -32,6 +49,19 @@ export default function VersionHistoryDrawer({ tenderId, bidderId, onClose, onRe
       setLoading(false);
     }
   };
+
+  const handleClose = useCallback(() => {
+    // Reverse animation before unmount
+    const tl = gsap.timeline({
+      onComplete: onClose,
+    });
+    if (drawerRef.current) {
+      tl.to(drawerRef.current, { x: '100%', duration: 0.4, ease: 'power3.in' }, 0);
+    }
+    if (backdropRef.current) {
+      tl.to(backdropRef.current, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 0);
+    }
+  }, [onClose]);
 
   const handleRestore = async (versionId: string) => {
     setRestoring(versionId);
@@ -57,17 +87,17 @@ export default function VersionHistoryDrawer({ tenderId, bidderId, onClose, onRe
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div ref={backdropRef} className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl animate-slide-in-right overflow-y-auto">
+      <div ref={drawerRef} className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl overflow-y-auto" style={{ transform: 'translateX(100%)' }}>
         {/* Header */}
         <div className="sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">Version History</h3>
             <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 font-mono">Bidder: {bidderId.slice(0, 12)}...</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+          <button onClick={handleClose} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
             <svg className="w-5 h-5 text-gray-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -91,7 +121,7 @@ export default function VersionHistoryDrawer({ tenderId, bidderId, onClose, onRe
           ) : versions.length === 0 ? (
             <p className="text-center text-gray-500 dark:text-slate-400 py-8">No versions found</p>
           ) : (
-            <div className="space-y-3">
+            <div ref={versionListRef} className="space-y-3">
               {versions.map((version, index) => (
                 <div
                   key={version.versionId}

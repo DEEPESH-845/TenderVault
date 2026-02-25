@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { listTenders, createTender, getErrorMessage } from '../services/api';
 import type { Tender, UserInfo } from '../services/types';
 import TenderCard from '../components/TenderCard';
+import AnimatedPage from '../components/AnimatedPage';
+import { useStagger } from '../hooks/useStagger';
+import { gsap } from '../lib/gsap';
 
 interface TenderListPageProps {
   userInfo: UserInfo | null;
@@ -14,6 +17,9 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
   const [createError, setCreateError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState({ title: '', description: '', deadline: '' });
+  const gridRef = useStagger<HTMLDivElement>(':scope > div', [tenders.length, loading]);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const modalBackdropRef = useRef<HTMLDivElement>(null);
 
   const fetchTenders = async () => {
     try {
@@ -30,6 +36,22 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
   useEffect(() => {
     fetchTenders();
   }, []);
+
+  // Modal entrance animation
+  useEffect(() => {
+    if (!showCreateModal) return;
+
+    if (modalBackdropRef.current) {
+      gsap.fromTo(modalBackdropRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+    }
+    if (modalRef.current) {
+      gsap.fromTo(
+        modalRef.current,
+        { opacity: 0, scale: 0.95, y: 20 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'power3.out', delay: 0.1 }
+      );
+    }
+  }, [showCreateModal]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +74,7 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
   };
 
   return (
-    <div>
+    <AnimatedPage>
       {/* Page Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
@@ -81,7 +103,7 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
           ))}
         </div>
       ) : tenders.length === 0 ? (
-        <div className="text-center py-20">
+        <div className="text-center py-20 animate-fade-in">
           <div className="w-20 h-20 mx-auto bg-gray-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-5">
             <svg className="w-10 h-10 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
@@ -95,7 +117,7 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tenders.map((tender) => (
             <TenderCard key={tender.tenderId} tender={tender} userInfo={userInfo} />
           ))}
@@ -105,9 +127,9 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
       {/* Create Tender Modal */}
       {showCreateModal && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setShowCreateModal(false)} />
+          <div ref={modalBackdropRef} className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setShowCreateModal(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl dark:shadow-black/50 max-w-lg w-full p-6 animate-fade-in border border-transparent dark:border-slate-800">
+            <div ref={modalRef} className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl dark:shadow-black/50 max-w-lg w-full p-6 border border-transparent dark:border-slate-800">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Create New Tender</h2>
 
               <form onSubmit={handleCreate} className="space-y-4">
@@ -177,6 +199,6 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
           </div>
         </>
       )}
-    </div>
+    </AnimatedPage>
   );
 }

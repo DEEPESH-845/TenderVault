@@ -1,11 +1,13 @@
 import { Routes, Route, Navigate, Outlet, Link, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getCurrentUser, signOut as authSignOut } from './services/auth';
 import type { UserInfo } from './services/types';
 import TenderListPage from './pages/TenderListPage';
 import TenderDetailPage from './pages/TenderDetailPage';
 import AuditLogPage from './pages/AuditLogPage';
 import ThemeToggle from './components/ThemeToggle';
+import { useGSAP } from './hooks/useGSAP';
+import { gsap } from './lib/gsap';
 
 interface AppRoutesProps {
   signOut: () => void;
@@ -14,6 +16,40 @@ interface AppRoutesProps {
 
 function Layout({ userInfo, onSignOut }: { userInfo: UserInfo | null; onSignOut: () => void }) {
   const location = useLocation();
+  const navRef = useRef<HTMLElement>(null);
+  const logoRef = useRef<HTMLAnchorElement>(null);
+
+  // Nav slide-down entrance animation
+  useGSAP(() => {
+    if (navRef.current) {
+      gsap.fromTo(
+        navRef.current,
+        { y: -20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }
+      );
+    }
+  }, []);
+
+  // Logo hover micro-interaction
+  const handleLogoEnter = () => {
+    if (logoRef.current && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.to(logoRef.current.querySelector('.logo-icon'), {
+        scale: 1.1,
+        duration: 0.3,
+        ease: 'power2.out',
+      });
+    }
+  };
+
+  const handleLogoLeave = () => {
+    if (logoRef.current && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.to(logoRef.current.querySelector('.logo-icon'), {
+        scale: 1,
+        duration: 0.3,
+        ease: 'power2.out',
+      });
+    }
+  };
 
   const roleBadge = {
     'tv-admin': { label: 'Officer', className: 'bg-violet-100 text-violet-700 ring-1 ring-violet-200 dark:bg-violet-500/10 dark:text-violet-400 dark:ring-violet-500/20' },
@@ -26,12 +62,18 @@ function Layout({ userInfo, onSignOut }: { userInfo: UserInfo | null; onSignOut:
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
+      <nav ref={navRef} className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-9 h-9 bg-gradient-to-br from-vault-500 to-vault-700 rounded-xl flex items-center justify-center shadow-lg shadow-vault-500/30 group-hover:shadow-vault-500/50 transition-all dark:from-vault-600 dark:to-vault-800">
+            <Link
+              ref={logoRef}
+              to="/"
+              className="flex items-center gap-3 group"
+              onMouseEnter={handleLogoEnter}
+              onMouseLeave={handleLogoLeave}
+            >
+              <div className="logo-icon w-9 h-9 bg-gradient-to-br from-vault-500 to-vault-700 rounded-xl flex items-center justify-center shadow-lg shadow-vault-500/30 group-hover:shadow-vault-500/50 transition-shadow dark:from-vault-600 dark:to-vault-800">
                 <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
@@ -91,7 +133,7 @@ function Layout({ userInfo, onSignOut }: { userInfo: UserInfo | null; onSignOut:
         </div>
       </nav>
 
-      {/* Main Content */}
+      {/* Main Content with page transition container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Outlet />
       </main>

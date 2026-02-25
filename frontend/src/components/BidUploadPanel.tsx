@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { generateUploadUrl, uploadFileToS3, getErrorMessage } from '../services/api';
+import { useGSAP } from '../hooks/useGSAP';
 
 interface BidUploadPanelProps {
   tenderId: string;
@@ -13,6 +14,12 @@ export default function BidUploadPanel({ tenderId, onUploadComplete, existingBid
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const dropzoneRef = useRef<HTMLDivElement>(null);
+
+  // Subtle scale animation on drag enter
+  useGSAP(() => {
+    // Animation setup is handled inline via drag state
+  }, []);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -77,10 +84,11 @@ export default function BidUploadPanel({ tenderId, onUploadComplete, existingBid
 
       {/* Dropzone */}
       <div
+        ref={dropzoneRef}
         {...getRootProps()}
         className={`relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 ${
           isDragActive
-            ? 'border-vault-400 bg-vault-50 dark:bg-vault-500/10'
+            ? 'border-vault-400 bg-vault-50 dark:bg-vault-500/10 scale-[1.02]'
             : isDragReject
               ? 'border-red-400 bg-red-50 dark:bg-red-500/10'
               : uploading
@@ -91,10 +99,10 @@ export default function BidUploadPanel({ tenderId, onUploadComplete, existingBid
         <input {...getInputProps()} />
 
         {success ? (
-          <div className="space-y-2 animate-fade-in">
+          <div className="space-y-2">
             <div className="w-12 h-12 mx-auto bg-emerald-100 dark:bg-emerald-500/10 rounded-full flex items-center justify-center">
               <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                <path className="checkmark-draw" strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
             <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Bid uploaded successfully!</p>
@@ -111,7 +119,7 @@ export default function BidUploadPanel({ tenderId, onUploadComplete, existingBid
             <p className="text-sm font-medium text-gray-700 dark:text-slate-300">Uploading... {progress}%</p>
             <div className="w-full max-w-xs mx-auto bg-gray-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-vault-500 to-vault-600 rounded-full transition-all duration-300"
+                className="h-full bg-gradient-to-r from-vault-500 to-vault-600 rounded-full transition-all duration-300 progress-shimmer"
                 style={{ width: `${progress}%` }}
               />
             </div>
