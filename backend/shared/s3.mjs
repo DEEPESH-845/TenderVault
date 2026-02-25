@@ -38,7 +38,7 @@ export async function generatePresignedGet({ bucket, key, versionId, fileName })
     Bucket: bucket,
     Key: key,
     VersionId: versionId,
-    ResponseContentDisposition: fileName ? `attachment; filename="${fileName}"` : undefined,
+    ResponseContentDisposition: fileName ? `attachment; filename="${fileName.replace(/["\\]/g, '_')}"` : undefined,
   });
   return getSignedUrl(s3Client, command, { expiresIn: PRESIGNED_URL_EXPIRY });
 }
@@ -79,7 +79,7 @@ export async function copyObjectVersion({ bucket, key, versionId }) {
   const result = await s3Client.send(new CopyObjectCommand({
     Bucket: bucket,
     Key: key,
-    CopySource: `${bucket}/${key}?versionId=${versionId}`,
+    CopySource: `${bucket}/${encodeURIComponent(key)}?versionId=${encodeURIComponent(versionId)}`,
     ServerSideEncryption: 'AES256',
   }));
 

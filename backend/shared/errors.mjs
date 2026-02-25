@@ -1,3 +1,5 @@
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
+
 /**
  * Custom application error class with HTTP status code and machine-readable error code.
  */
@@ -42,7 +44,7 @@ export function errorResponse(code, message, statusCode, requestId, fields) {
     statusCode,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
       'Access-Control-Allow-Headers': 'Content-Type,Authorization',
     },
     body: JSON.stringify(body),
@@ -60,7 +62,7 @@ export function successResponse(statusCode, body) {
     statusCode,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
       'Access-Control-Allow-Headers': 'Content-Type,Authorization',
     },
     body: JSON.stringify(body),
