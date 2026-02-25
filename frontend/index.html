@@ -7,8 +7,19 @@
     <meta name="description" content="TenderVault — Tamper-proof, time-locked government tender bid management platform" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <title>TenderVault — Secure Tender Management</title>
+    <script>
+      // Prevent FOUC: apply dark class synchronously before first paint
+      (function() {
+        var theme = localStorage.getItem('tv-theme');
+        var isDark = theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.style.colorScheme = 'dark';
+        }
+      })();
+    </script>
   </head>
-  <body class="bg-gray-50 antialiased">
+  <body class="antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

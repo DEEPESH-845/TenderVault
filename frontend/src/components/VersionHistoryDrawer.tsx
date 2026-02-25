@@ -60,15 +60,15 @@ export default function VersionHistoryDrawer({ tenderId, bidderId, onClose, onRe
       <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={onClose} />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-white shadow-2xl animate-slide-in-right overflow-y-auto">
+      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl animate-slide-in-right overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white/90 backdrop-blur-xl border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Version History</h3>
-            <p className="text-xs text-gray-500 mt-0.5 font-mono">Bidder: {bidderId.slice(0, 12)}...</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Version History</h3>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 font-mono">Bidder: {bidderId.slice(0, 12)}...</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+            <svg className="w-5 h-5 text-gray-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -77,7 +77,7 @@ export default function VersionHistoryDrawer({ tenderId, bidderId, onClose, onRe
         {/* Content */}
         <div className="p-6">
           {error && (
-            <div className="mb-4 p-3 bg-red-50 rounded-xl border border-red-100 text-sm text-red-700">
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20 text-sm text-red-700 dark:text-red-400">
               {error}
             </div>
           )}
@@ -89,7 +89,7 @@ export default function VersionHistoryDrawer({ tenderId, bidderId, onClose, onRe
               ))}
             </div>
           ) : versions.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">No versions found</p>
+            <p className="text-center text-gray-500 dark:text-slate-400 py-8">No versions found</p>
           ) : (
             <div className="space-y-3">
               {versions.map((version, index) => (
@@ -97,26 +97,26 @@ export default function VersionHistoryDrawer({ tenderId, bidderId, onClose, onRe
                   key={version.versionId}
                   className={`p-4 rounded-xl border transition-all ${
                     version.isLatest
-                      ? 'border-vault-200 bg-vault-50/50'
-                      : 'border-gray-100 hover:border-gray-200'
+                      ? 'border-vault-200 dark:border-vault-500/30 bg-vault-50/50 dark:bg-vault-500/5'
+                      : 'border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-gray-900">V{versions.length - index}</span>
+                      <span className="text-sm font-bold text-gray-900 dark:text-white">V{versions.length - index}</span>
                       {version.isLatest && (
                         <span className="badge-open text-[10px] px-2 py-0.5">Current</span>
                       )}
                     </div>
-                    <span className="text-xs text-gray-400">{formatFileSize(version.size)}</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500">{formatFileSize(version.size)}</span>
                   </div>
 
-                  <p className="text-xs text-gray-500 mb-3 font-mono">
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mb-3 font-mono">
                     {version.versionId.slice(0, 20)}...
                   </p>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-400 dark:text-slate-500">
                       {version.lastModified
                         ? formatDistanceToNow(new Date(version.lastModified), { addSuffix: true })
                         : 'Unknown date'}
@@ -134,7 +134,7 @@ export default function VersionHistoryDrawer({ tenderId, bidderId, onClose, onRe
                           </button>
                           <button
                             onClick={() => setConfirmRestore(null)}
-                            className="text-xs text-gray-500 hover:text-gray-700"
+                            className="text-xs text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
                           >
                             Cancel
                           </button>

@@ -13,9 +13,9 @@ export default function AuditLogTable({ events, loading, hasMore, onLoadMore }: 
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const resultColors: Record<string, string> = {
-    SUCCESS: 'text-emerald-700 bg-emerald-50 ring-1 ring-emerald-200',
-    DENIED: 'text-red-700 bg-red-50 ring-1 ring-red-200',
-    ERROR: 'text-orange-700 bg-orange-50 ring-1 ring-orange-200',
+    SUCCESS: 'text-emerald-700 bg-emerald-50 ring-1 ring-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 dark:ring-emerald-500/20',
+    DENIED: 'text-red-700 bg-red-50 ring-1 ring-red-200 dark:text-red-400 dark:bg-red-500/10 dark:ring-red-500/20',
+    ERROR: 'text-orange-700 bg-orange-50 ring-1 ring-orange-200 dark:text-orange-400 dark:bg-orange-500/10 dark:ring-orange-500/20',
   };
 
   const handleExportCSV = () => {
@@ -63,7 +63,7 @@ export default function AuditLogTable({ events, loading, hasMore, onLoadMore }: 
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-gray-100">
+      <div className="overflow-hidden rounded-xl border border-gray-100 dark:border-slate-800">
         <table className="min-w-full">
           <thead>
             <tr>
@@ -75,19 +75,19 @@ export default function AuditLogTable({ events, loading, hasMore, onLoadMore }: 
               <th className="table-header">Result</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
             {events.map((event) => (
               <>
                 <tr
                   key={event.auditId}
-                  className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+                  className="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                   onClick={() => setExpandedRow(expandedRow === event.auditId ? null : event.auditId)}
                 >
-                  <td className="table-cell text-xs font-mono text-gray-500">
+                  <td className="table-cell text-xs font-mono text-gray-500 dark:text-slate-400">
                     {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true })}
                   </td>
                   <td className="table-cell">
-                    <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">
+                    <span className="font-mono text-xs bg-gray-100 dark:bg-slate-800 dark:text-slate-300 px-1.5 py-0.5 rounded">
                       {event.userId.slice(0, 8)}...
                     </span>
                   </td>
@@ -97,11 +97,11 @@ export default function AuditLogTable({ events, loading, hasMore, onLoadMore }: 
                   </td>
                   <td className="table-cell">
                     {event.tenderId ? (
-                      <span className="font-mono text-xs text-gray-500">
+                      <span className="font-mono text-xs text-gray-500 dark:text-slate-400">
                         {event.tenderId.slice(0, 8)}...
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-300">—</span>
+                      <span className="text-xs text-gray-300 dark:text-slate-600">—</span>
                     )}
                   </td>
                   <td className="table-cell">
@@ -112,13 +112,13 @@ export default function AuditLogTable({ events, loading, hasMore, onLoadMore }: 
                 </tr>
                 {expandedRow === event.auditId && (
                   <tr key={`${event.auditId}-detail`}>
-                    <td colSpan={6} className="px-4 py-3 bg-gray-50/80">
+                    <td colSpan={6} className="px-4 py-3 bg-gray-50/80 dark:bg-slate-800/50">
                       <div className="text-xs space-y-1">
-                        <p><strong className="text-gray-500">Audit ID:</strong> <span className="font-mono">{event.auditId}</span></p>
-                        <p><strong className="text-gray-500">Full Timestamp:</strong> {event.timestamp}</p>
-                        <p><strong className="text-gray-500">IP Address:</strong> {event.ipAddress}</p>
-                        {event.fileKey && <p><strong className="text-gray-500">File Key:</strong> <span className="font-mono">{event.fileKey}</span></p>}
-                        {event.versionId && <p><strong className="text-gray-500">Version ID:</strong> <span className="font-mono">{event.versionId}</span></p>}
+                        <p><strong className="text-gray-500 dark:text-slate-400">Audit ID:</strong> <span className="font-mono dark:text-slate-300">{event.auditId}</span></p>
+                        <p><strong className="text-gray-500 dark:text-slate-400">Full Timestamp:</strong> <span className="dark:text-slate-300">{event.timestamp}</span></p>
+                        <p><strong className="text-gray-500 dark:text-slate-400">IP Address:</strong> <span className="dark:text-slate-300">{event.ipAddress}</span></p>
+                        {event.fileKey && <p><strong className="text-gray-500 dark:text-slate-400">File Key:</strong> <span className="font-mono dark:text-slate-300">{event.fileKey}</span></p>}
+                        {event.versionId && <p><strong className="text-gray-500 dark:text-slate-400">Version ID:</strong> <span className="font-mono dark:text-slate-300">{event.versionId}</span></p>}
                       </div>
                     </td>
                   </tr>
@@ -143,7 +143,7 @@ export default function AuditLogTable({ events, loading, hasMore, onLoadMore }: 
       )}
 
       {events.length === 0 && !loading && (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-gray-500 dark:text-slate-400">
           <p className="text-sm">No audit events found</p>
         </div>
       )}
