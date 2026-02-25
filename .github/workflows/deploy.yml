@@ -53,12 +53,6 @@ jobs:
     name: Deploy Backend
     needs: test
     runs-on: ubuntu-latest
-    outputs:
-      api-endpoint: ${{ steps.outputs.outputs.api-endpoint }}
-      user-pool-id: ${{ steps.outputs.outputs.user-pool-id }}
-      client-id: ${{ steps.outputs.outputs.client-id }}
-      frontend-bucket: ${{ steps.outputs.outputs.frontend-bucket }}
-      cf-dist-id: ${{ steps.outputs.outputs.cf-dist-id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -91,52 +85,3 @@ jobs:
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --parameter-overrides Environment=dev
-
-      - name: Get Stack Outputs
-        id: outputs
-        run: |
-          echo "api-endpoint=$(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query "Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue" --output text)" >> $GITHUB_OUTPUT
-          echo "user-pool-id=$(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)" >> $GITHUB_OUTPUT
-          echo "client-id=$(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)" >> $GITHUB_OUTPUT
-          echo "frontend-bucket=$(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" --output text)" >> $GITHUB_OUTPUT
-          echo "cf-dist-id=$(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)" >> $GITHUB_OUTPUT
-
-  # ============================================================
-  # JOB 3: Deploy Frontend
-  # ============================================================
-  deploy-frontend:
-    name: Deploy Frontend
-    needs: deploy-backend
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-
-      - run: npm ci
-
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Build Frontend
-        working-directory: frontend
-        run: npm run build
-        env:
-          VITE_API_URL: ${{ needs.deploy-backend.outputs.api-endpoint }}
-          VITE_USER_POOL_ID: ${{ needs.deploy-backend.outputs.user-pool-id }}
-          VITE_USER_POOL_CLIENT_ID: ${{ needs.deploy-backend.outputs.client-id }}
-          VITE_AWS_REGION: ${{ env.AWS_REGION }}
-
-      - name: Deploy to S3
-        run: aws s3 sync frontend/dist/ s3://${{ needs.deploy-backend.outputs.frontend-bucket }}/ --delete
-
-      - name: Invalidate CloudFront
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ needs.deploy-backend.outputs.cf-dist-id }} \
-            --paths "/*"

@@ -5,8 +5,8 @@
     "type": "module",
     "description": "TenderVault Lambda functions and shared utilities",
     "scripts": {
-        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit",
-        "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --forceExit",
+        "test": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js --forceExit",
+        "test:coverage": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js --coverage --forceExit",
         "lint": "eslint 'functions/**/*.mjs' 'shared/**/*.mjs'"
     },
     "dependencies": {
