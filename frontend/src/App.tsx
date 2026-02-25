@@ -1,9 +1,27 @@
-import { Authenticator } from '@aws-amplify/ui-react';
+import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react';
 import { BrowserRouter } from 'react-router-dom';
 import { AppRoutes } from './routes';
 import './services/auth'; // Initialize Amplify config
 
 function App() {
+  const { route, signOut, user } = useAuthenticator((context) => [context.route, context.user]);
+
+  // =========================================================================
+  // 1) AUTHENTICATED STATE: Render ONLY the Fullscreen Dashboard
+  // =========================================================================
+  if (route === 'authenticated') {
+    return (
+      <div className="min-h-screen w-full bg-slate-50 dark:bg-[#101922] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+        <BrowserRouter>
+          <AppRoutes signOut={signOut} user={user} />
+        </BrowserRouter>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // 2) UNAUTHENTICATED STATE: Render the Premium Split-Screen Login Layout
+  // =========================================================================
   return (
     <div className="bg-[#101922] font-sans text-slate-100 min-h-screen flex flex-col pt-0 relative">
       {/* HEADER */}
@@ -37,21 +55,21 @@ function App() {
           </div>
         </div>
 
-        {/* RIGHT LOGIN CONTAINER */}
-        <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-white lg:bg-[#101922]">
+        {/* RIGHT LOGIN CONTAINER - Perfect Visual Centering */}
+        <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-white lg:bg-[#101922] w-full min-h-screen">
            
            <div 
-             className="w-full max-w-[460px] p-6 sm:p-8 rounded-xl lg:shadow-2xl border border-slate-200 lg:border-slate-800/50"
+             className="w-full max-w-[460px] p-6 sm:p-8 rounded-xl lg:shadow-2xl border border-slate-200 lg:border-slate-800/50 flex flex-col items-center"
              style={{ background: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
            >
-              <div className="mb-6 text-center lg:text-left">
+              <div className="mb-6 w-full text-center lg:text-left">
                  <h2 className="text-2xl font-bold text-slate-900 lg:text-white mb-2">Welcome Back</h2>
                  <p className="text-slate-500 lg:text-slate-400 text-sm">Sign in with your enterprise credentials to access the platform.</p>
               </div>
 
               {/* AWS AMPLIFY AUTHENTICATOR WIDGET */}
               <div 
-                className="aws-amplify-wrapper" 
+                className="aws-amplify-wrapper w-full flex justify-center" 
                 style={{ 
                   '--amplify-components-authenticator-router-box-shadow': 'none', 
                   '--amplify-components-authenticator-router-border-width': '0',
@@ -64,19 +82,10 @@ function App() {
                    loginMechanisms={['email']}
                    signUpAttributes={['email']}
                    variation="default"
-                 >
-                   {({ signOut, user }) => (
-                     /* DASHBOARD OVERLAY: Rendered ONLY when logged in */
-                     <div className="fixed inset-0 bg-gray-50 z-50 overflow-auto text-slate-900">
-                       <BrowserRouter>
-                         <AppRoutes signOut={signOut!} user={user!} />
-                       </BrowserRouter>
-                     </div>
-                   )}
-                 </Authenticator>
+                 />
               </div>
 
-              <div className="mt-6 text-center border-t border-slate-200 lg:border-slate-800/50 pt-6">
+              <div className="mt-6 w-full text-center border-t border-slate-200 lg:border-slate-800/50 pt-6">
                  <p className="text-xs text-slate-500">
                      Authorized users only. All actions are audited.
                      <br className="my-1"/>
