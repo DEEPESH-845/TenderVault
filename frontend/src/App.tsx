@@ -17,7 +17,7 @@ function App() {
   if (route === 'authenticated') {
     return (
       <div className="min-h-screen w-full bg-slate-50 dark:bg-[#101922] text-slate-900 dark:text-slate-100 transition-colors duration-300">
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
           <AppRoutes signOut={signOut} user={user} />
         </BrowserRouter>
       </div>
