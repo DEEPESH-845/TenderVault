@@ -1,5 +1,5 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, UpdateCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, UpdateCommand, ScanCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client, {
@@ -114,4 +114,17 @@ export async function updateItem(tableName, key, updateExpression, expressionAtt
     ReturnValues: 'ALL_NEW',
   }));
   return result.Attributes;
+}
+
+/**
+ * Delete a single item from DynamoDB by key.
+ * @param {string} tableName
+ * @param {object} key - Primary key object, e.g. { tenderId: '...' }
+ * @returns {Promise<void>}
+ */
+export async function deleteItem(tableName, key) {
+  await docClient.send(new DeleteCommand({
+    TableName: tableName,
+    Key: key,
+  }));
 }

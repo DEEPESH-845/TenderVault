@@ -11,7 +11,7 @@ Globals:
       AllowHeaders:
         - "*"
       AllowOrigins:
-        - "*"
+        - !Ref AllowedOrigin
     Auth:
       DefaultAuthorizer: TvAuthorizer
       Authorizers:
@@ -36,6 +36,7 @@ Globals:
         USER_POOL_ID: !Ref UserPool
         USER_POOL_CLIENT_ID: !Ref UserPoolClient
         ENVIRONMENT: !Ref Environment
+        ALLOWED_ORIGIN: !Ref AllowedOrigin
 
 Parameters:
   Environment:
@@ -47,7 +48,22 @@ Parameters:
     Type: String
     Default: arn:aws:iam::854059374859:role/LabRole
 
+  AllowedOrigin:
+    Type: String
+    Default: '*'
+    Description: 'CORS allowed origin. Set to your frontend domain in production (e.g. https://yourdomain.com)'
+
 Resources:
+
+# ================= API Gateway =================
+
+  ServerlessHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 50
+        ThrottlingRateLimit: 25
 
 # ================= S3 =================
 
@@ -107,9 +123,35 @@ Resources:
       AttributeDefinitions:
         - AttributeName: auditId
           AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: tenderId
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
       KeySchema:
         - AttributeName: auditId
           KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: userId-timestamp-index
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: tenderId-timestamp-index
+          KeySchema:
+            - AttributeName: tenderId
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: retentionExpiry
+        Enabled: true
 
 # ================= Cognito =================
 
