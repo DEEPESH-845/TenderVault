@@ -184,6 +184,10 @@ Resources:
       CodeUri: ../backend/
       Handler: functions/delete-tender/index.handler
       Role: !Ref LabRoleArn
+      Environment:
+        Variables:
+          TENDERS_TABLE: !Ref TendersTable
+          AUDIT_LOG_TABLE: !Ref AuditLogTable
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TendersTable
