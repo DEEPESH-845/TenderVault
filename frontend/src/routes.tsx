@@ -5,6 +5,7 @@ import type { UserInfo } from './services/types';
 import TenderListPage from './pages/TenderListPage';
 import TenderDetailPage from './pages/TenderDetailPage';
 import AuditLogPage from './pages/AuditLogPage';
+import ThemeToggle from './components/ThemeToggle';
 
 interface AppRoutesProps {
   signOut: () => void;
@@ -25,18 +26,18 @@ function Layout({ userInfo, onSignOut }: { userInfo: UserInfo | null; onSignOut:
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="bg-white/70 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-50">
+      <nav className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-9 h-9 bg-gradient-to-br from-vault-500 to-vault-700 rounded-xl flex items-center justify-center shadow-lg shadow-vault-500/30 group-hover:shadow-vault-500/50 transition-all">
+              <div className="w-9 h-9 bg-gradient-to-br from-vault-500 to-vault-700 rounded-xl flex items-center justify-center shadow-lg shadow-vault-500/30 group-hover:shadow-vault-500/50 transition-all dark:from-vault-600 dark:to-vault-800">
                 <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <span className="text-xl font-extrabold text-gray-900 tracking-tight">
-                Tender<span className="text-vault-600">Vault</span>
+              <span className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight transition-colors duration-300">
+                Tender<span className="text-vault-600 dark:text-vault-400">Vault</span>
               </span>
             </Link>
 
@@ -46,8 +47,8 @@ function Layout({ userInfo, onSignOut }: { userInfo: UserInfo | null; onSignOut:
                 to="/"
                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
                   location.pathname === '/'
-                    ? 'bg-vault-50 text-vault-700'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    ? 'bg-vault-50 text-vault-700 dark:bg-vault-500/10 dark:text-vault-400'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/50'
                 }`}
               >
                 Tenders
@@ -57,8 +58,8 @@ function Layout({ userInfo, onSignOut }: { userInfo: UserInfo | null; onSignOut:
                   to="/audit-logs"
                   className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
                     location.pathname === '/audit-logs'
-                      ? 'bg-vault-50 text-vault-700'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      ? 'bg-vault-50 text-vault-700 dark:bg-vault-500/10 dark:text-vault-400'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/50'
                   }`}
                 >
                   Audit Logs
@@ -66,19 +67,22 @@ function Layout({ userInfo, onSignOut }: { userInfo: UserInfo | null; onSignOut:
               )}
             </div>
 
-            {/* User Info */}
-            <div className="flex items-center gap-3">
-              {badge && (
-                <span className={`badge ${badge.className}`}>
-                  {badge.label}
+            {/* User Info & Toggle */}
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <div className="hidden md:flex items-center gap-3">
+                {badge && (
+                  <span className={`badge ${badge.className}`}>
+                    {badge.label}
+                  </span>
+                )}
+                <span className="text-sm text-gray-500 dark:text-slate-400 transition-colors duration-300">
+                  {userInfo?.email}
                 </span>
-              )}
-              <span className="text-sm text-gray-500 hidden md:block">
-                {userInfo?.email}
-              </span>
+              </div>
               <button
                 onClick={onSignOut}
-                className="px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                className="px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 dark:text-slate-400 dark:hover:text-red-400 rounded-lg transition-all"
               >
                 Sign Out
               </button>
