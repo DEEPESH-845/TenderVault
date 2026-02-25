@@ -1,0 +1,257 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: TenderVault backend stack
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 15
+    MemorySize: 256
+    Architectures: [arm64]
+    Environment:
+      Variables:
+        TENDERS_TABLE: !Ref TendersTable
+        BIDS_TABLE: !Ref BidsTable
+        AUDIT_LOG_TABLE: !Ref AuditLogTable
+        BIDS_BUCKET: !Sub 'tv-bids-${Environment}-${AWS::AccountId}'
+        USER_POOL_ID: !Ref UserPool
+        USER_POOL_CLIENT_ID: !Ref UserPoolClient
+        ENVIRONMENT: !Ref Environment
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, prod]
+
+  LabRoleArn:
+    Type: String
+    Default: arn:aws:iam::854059374859:role/LabRole
+
+Resources:
+
+# ================= S3 =================
+
+  AccessLogsBucket:
+    Type: AWS::S3::Bucket
+
+  BidsPrimaryBucket:
+    Type: AWS::S3::Bucket
+    DependsOn: TvConfirmUploadPermission
+    Properties:
+      BucketName: !Sub 'tv-bids-${Environment}-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Ref AccessLogsBucket
+        LogFilePrefix: bids/
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Function: !GetAtt TvConfirmUploadFunction.Arn
+
+# ================= DynamoDB =================
+
+  TendersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'tv-tenders-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: tenderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: tenderId
+          KeyType: HASH
+
+  BidsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'tv-bids-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: tenderId
+          AttributeType: S
+        - AttributeName: bidderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: tenderId
+          KeyType: HASH
+        - AttributeName: bidderId
+          KeyType: RANGE
+
+  AuditLogTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'tv-audit-log-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: auditId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: auditId
+          KeyType: HASH
+
+# ================= Cognito =================
+
+  UserPool:
+    Type: AWS::Cognito::UserPool
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+
+# ================= Lambdas =================
+
+  TvCreateTenderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/functions/create-tender/
+      Handler: index.handler
+      Role: !Ref LabRoleArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /tenders
+            Method: POST
+
+  TvListTendersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/functions/list-tenders/
+      Handler: index.handler
+      Role: !Ref LabRoleArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /tenders
+            Method: GET
+
+  TvGetTenderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/functions/get-tender/
+      Handler: index.handler
+      Role: !Ref LabRoleArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /tenders/{tenderId}
+            Method: GET
+
+  TvGenerateUploadUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/functions/generate-upload-url/
+      Handler: index.handler
+      Role: !Ref LabRoleArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /tenders/{tenderId}/bids/upload-url
+            Method: POST
+
+  TvConfirmUploadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/functions/confirm-upload/
+      Handler: index.handler
+      Timeout: 30
+      Role: !Ref LabRoleArn
+
+  TvConfirmUploadPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt TvConfirmUploadFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+
+  TvGenerateDownloadUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/functions/generate-download-url/
+      Handler: index.handler
+      Role: !Ref LabRoleArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /tenders/{tenderId}/bids/{bidderId}/download-url
+            Method: GET
+
+  TvListBidsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/functions/list-bids/
+      Handler: index.handler
+      Role: !Ref LabRoleArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /tenders/{tenderId}/bids
+            Method: GET
+
+  TvListVersionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/functions/list-versions/
+      Handler: index.handler
+      Role: !Ref LabRoleArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /tenders/{tenderId}/bids/{bidderId}/versions
+            Method: GET
+
+  TvRestoreVersionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/functions/restore-version/
+      Handler: index.handler
+      Timeout: 30
+      Role: !Ref LabRoleArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /tenders/{tenderId}/bids/{bidderId}/restore
+            Method: POST
+
+  TvListAuditLogsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/functions/list-audit-logs/
+      Handler: index.handler
+      Role: !Ref LabRoleArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /audit-logs
+            Method: GET
+
+# ================= Outputs =================
+
+Outputs:
+
+  ApiEndpoint:
+    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com'
+
+  UserPoolId:
+    Value: !Ref UserPool
+
+  UserPoolClientId:
+    Value: !Ref UserPoolClient
+
+  BidsPrimaryBucketName:
+    Value: !Ref BidsPrimaryBucket

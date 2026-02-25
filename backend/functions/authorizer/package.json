@@ -1,0 +1,11 @@
+{
+    "name": "tv-authorizer",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "dependencies": {
+        "aws-jwt-verify": "^4.0.1",
+        "@aws-sdk/client-dynamodb": "^3.540.0",
+        "@aws-sdk/lib-dynamodb": "^3.540.0"
+    }
+}

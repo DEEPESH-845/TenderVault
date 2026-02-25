@@ -1,0 +1,25 @@
+{
+    "name": "tendervault-backend",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "description": "TenderVault Lambda functions and shared utilities",
+    "scripts": {
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit",
+        "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --forceExit",
+        "lint": "eslint 'functions/**/*.mjs' 'shared/**/*.mjs'"
+    },
+    "dependencies": {
+        "@aws-sdk/client-dynamodb": "^3.540.0",
+        "@aws-sdk/client-s3": "^3.540.0",
+        "@aws-sdk/lib-dynamodb": "^3.540.0",
+        "@aws-sdk/s3-request-presigner": "^3.540.0",
+        "aws-jwt-verify": "^4.0.1"
+    },
+    "devDependencies": {
+        "@jest/globals": "^29.7.0",
+        "jest": "^29.7.0",
+        "@types/jest": "^29.5.12",
+        "eslint": "^8.57.0"
+    }
+}
