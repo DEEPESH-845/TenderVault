@@ -39,6 +39,16 @@ export async function writeAuditEvent(params) {
       retentionExpiry: Math.floor(now.getTime() / 1000) + (RETENTION_DAYS * 24 * 60 * 60),
     };
 
+    // Generic GSI Pattern: gsi1 = User facet, gsi2 = Tender facet
+    if (params.userId) {
+      auditEvent.gsi1pk = `USER#${params.userId}`;
+      auditEvent.gsi1sk = auditEvent.timestamp;
+    }
+    if (params.tenderId) {
+      auditEvent.gsi2pk = `TENDER#${params.tenderId}`;
+      auditEvent.gsi2sk = auditEvent.timestamp;
+    }
+
     // Remove undefined values
     Object.keys(auditEvent).forEach(key => {
       if (auditEvent[key] === undefined) {
