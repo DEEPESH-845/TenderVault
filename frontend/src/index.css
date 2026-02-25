@@ -185,32 +185,48 @@
   --amplify-colors-background-primary: transparent;
   --amplify-colors-background-secondary: transparent;
 
-  --amplify-colors-font-primary: white;
-  --amplify-colors-font-secondary: #94a3b8;
-  --amplify-colors-font-tertiary: #cbd5e1;
+  /* Mobile-first: light background context */
+  --amplify-colors-font-primary: #1e293b;
+  --amplify-colors-font-secondary: #64748b;
+  --amplify-colors-font-tertiary: #94a3b8;
   --amplify-colors-font-interactive: #0d7ff2;
 
   --amplify-space-medium: 1.25rem;
 
-  --amplify-components-fieldcontrol-border-color: rgba(255, 255, 255, 0.1);
+  --amplify-components-fieldcontrol-border-color: #e2e8f0;
   --amplify-components-fieldcontrol-border-width: 1px;
-  --amplify-components-fieldcontrol-border-radius: 0.5rem;
-  --amplify-components-fieldcontrol-background-color: rgba(255, 255, 255, 0.05);
-  --amplify-components-fieldcontrol-color: white;
+  --amplify-components-fieldcontrol-border-radius: 0.75rem;
+  --amplify-components-fieldcontrol-background-color: #f8fafc;
+  --amplify-components-fieldcontrol-color: #1e293b;
   --amplify-components-fieldcontrol-padding-block: 0.875rem;
 
   --amplify-colors-brand-primary-80: #0d7ff2;
   --amplify-colors-brand-primary-90: #0b6ed1;
   --amplify-colors-brand-primary-100: #0a5eb5;
-  --amplify-components-button-border-radius: 0.5rem;
-  --amplify-components-button-padding-block: 1rem;
+  --amplify-components-button-border-radius: 0.75rem;
+  --amplify-components-button-padding-block: 0.875rem;
   --amplify-components-button-primary-background-color: #0d7ff2;
   --amplify-components-button-primary-hover-background-color: #0b6ed1;
   --amplify-components-button-primary-color: white;
 
   --amplify-components-tabs-item-color: #94a3b8;
-  --amplify-components-tabs-item-active-color: white;
+  --amplify-components-tabs-item-active-color: #1e293b;
   --amplify-components-tabs-item-active-border-color: #0d7ff2;
+}
+
+/* Desktop (lg+): dark background context */
+@media (min-width: 1024px) {
+  [data-amplify-authenticator] {
+    --amplify-colors-font-primary: white;
+    --amplify-colors-font-secondary: #94a3b8;
+    --amplify-colors-font-tertiary: #cbd5e1;
+
+    --amplify-components-fieldcontrol-border-color: rgba(255, 255, 255, 0.1);
+    --amplify-components-fieldcontrol-background-color: rgba(255, 255, 255, 0.05);
+    --amplify-components-fieldcontrol-color: white;
+
+    --amplify-components-tabs-item-active-color: white;
+  }
 }
 
 [data-amplify-authenticator] [data-amplify-container] {
@@ -227,7 +243,13 @@
 }
 
 .amplify-label {
-  color: #e2e8f0 !important;
   font-weight: 600 !important;
   font-size: 0.875rem !important;
+  color: #475569 !important;
+}
+
+@media (min-width: 1024px) {
+  .amplify-label {
+    color: #e2e8f0 !important;
+  }
 }

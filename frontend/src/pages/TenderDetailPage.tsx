@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { isPast, format } from 'date-fns';
 import { getTender, listBids, getErrorMessage, isTenderLockedError, deleteTender } from '../services/api';
@@ -8,6 +8,7 @@ import BidListPanel from '../components/BidListPanel';
 import TimeLockOverlay from '../components/TimeLockOverlay';
 import AnimatedPage from '../components/AnimatedPage';
 import ScrollReveal from '../components/ScrollReveal';
+import { gsap } from '../lib/gsap';
 
 interface TenderDetailPageProps {
   userInfo: UserInfo | null;
@@ -22,6 +23,11 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLocked, setIsLocked] = useState(true);
   const [bidsError, setBidsError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const deleteModalRef = useRef<HTMLDivElement>(null);
+  const deleteBackdropRef = useRef<HTMLDivElement>(null);
 
   const fetchTender = useCallback(async () => {
     if (!tenderId) return;
@@ -70,15 +76,32 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
 
   const handleDelete = async () => {
     if (!tenderId) return;
-    if (window.confirm('WARNING: Are you sure you want to permanently delete this tender? This action cannot be undone.')) {
-      try {
-        await deleteTender(tenderId);
-        navigate('/');
-      } catch (err) {
-        alert('Failed to delete tender: ' + getErrorMessage(err));
-      }
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteTender(tenderId);
+      setShowDeleteModal(false);
+      navigate('/');
+    } catch (err) {
+      setDeleteError(getErrorMessage(err));
+      setDeleting(false);
     }
   };
+
+  // Animate delete modal on open
+  useEffect(() => {
+    if (!showDeleteModal) return;
+    if (deleteBackdropRef.current) {
+      gsap.fromTo(deleteBackdropRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+    }
+    if (deleteModalRef.current) {
+      gsap.fromTo(
+        deleteModalRef.current,
+        { opacity: 0, scale: 0.95, y: 20 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'power3.out', delay: 0.1 }
+      );
+    }
+  }, [showDeleteModal]);
 
   if (loading) {
     return (
@@ -131,7 +154,7 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
                 <span className={statusBadge[tender.status]}>{tender.status}</span>
                 {userInfo?.role === 'tv-admin' && (
                   <button
-                    onClick={handleDelete}
+                    onClick={() => { setDeleteError(null); setShowDeleteModal(true); }}
                     className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 px-3 py-1 rounded-full border border-red-200 dark:border-red-500/20 transition-colors flex items-center gap-1"
                     title="Permanently Delete Tender"
                   >
@@ -221,6 +244,55 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
           </ScrollReveal>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <>
+          <div ref={deleteBackdropRef} className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => !deleting && setShowDeleteModal(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div ref={deleteModalRef} className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl dark:shadow-black/50 max-w-md w-full p-6 border border-transparent dark:border-slate-800">
+              <div className="w-14 h-14 mx-auto bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white text-center mb-2">Delete Tender</h3>
+              <p className="text-sm text-gray-500 dark:text-slate-400 text-center mb-1">
+                Are you sure you want to permanently delete
+              </p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white text-center mb-4 line-clamp-2">
+                "{tender.title}"?
+              </p>
+              <p className="text-xs text-red-600 dark:text-red-400 text-center mb-6">
+                This action cannot be undone. All associated data will be lost.
+              </p>
+
+              {deleteError && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20 text-sm text-red-700 dark:text-red-400">
+                  {deleteError}
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deleting}
+                  className="btn-secondary flex-1"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="btn-danger flex-1"
+                >
+                  {deleting ? 'Deleting...' : 'Delete Permanently'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </AnimatedPage>
   );
 }
