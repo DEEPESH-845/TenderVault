@@ -70,20 +70,64 @@
   }
 }
 
-/* Amplify Auth Overrides */
+/* Amplify Auth Overrides for Premium Split-Screen Design */
 [data-amplify-authenticator] {
-  --amplify-colors-brand-primary-10: theme('colors.vault.50');
-  --amplify-colors-brand-primary-20: theme('colors.vault.100');
-  --amplify-colors-brand-primary-40: theme('colors.vault.200');
-  --amplify-colors-brand-primary-60: theme('colors.vault.400');
-  --amplify-colors-brand-primary-80: theme('colors.vault.600');
-  --amplify-colors-brand-primary-90: theme('colors.vault.700');
-  --amplify-colors-brand-primary-100: theme('colors.vault.800');
-  --amplify-radii-small: 0.75rem;
-  --amplify-radii-medium: 1rem;
-  --amplify-radii-large: 1.5rem;
+  /* Remove default boxes and backgrounds */
+  --amplify-components-authenticator-router-box-shadow: none;
+  --amplify-components-authenticator-router-border-width: 0;
+  --amplify-colors-background-primary: transparent;
+  --amplify-colors-background-secondary: transparent;
+
+  /* typography */
+  --amplify-colors-font-primary: white;
+  --amplify-colors-font-secondary: #94a3b8; /* text-slate-400 */
+  --amplify-colors-font-tertiary: #cbd5e1; /* text-slate-300 */
+  --amplify-colors-font-interactive: #0d7ff2;
+
+  /* Layout and Spacing */
+  --amplify-space-medium: 1.25rem;
+  
+  /* Input fields (Glassmorphism feel) */
+  --amplify-components-fieldcontrol-border-color: rgba(255, 255, 255, 0.1);
+  --amplify-components-fieldcontrol-border-width: 1px;
+  --amplify-components-fieldcontrol-border-radius: 0.5rem;
+  --amplify-components-fieldcontrol-background-color: rgba(255, 255, 255, 0.05);
+  --amplify-components-fieldcontrol-color: white;
+  --amplify-components-fieldcontrol-padding-block: 0.875rem;
+
+  /* Primary Button (Authorize Access) */
+  --amplify-colors-brand-primary-80: #0d7ff2;
+  --amplify-colors-brand-primary-90: #0b6ed1;
+  --amplify-colors-brand-primary-100: #0a5eb5;
+  --amplify-components-button-border-radius: 0.5rem;
+  --amplify-components-button-padding-block: 1rem;
+  --amplify-components-button-primary-background-color: #0d7ff2;
+  --amplify-components-button-primary-hover-background-color: #0b6ed1;
+  --amplify-components-button-primary-color: white;
+
+  /* Tabs (Sign In / Create Account) */
+  --amplify-components-tabs-item-color: #94a3b8;
+  --amplify-components-tabs-item-active-color: white;
+  --amplify-components-tabs-item-active-border-color: #0d7ff2;
 }
 
 [data-amplify-authenticator] [data-amplify-container] {
-  max-width: 28rem;
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Force hiding the default AWS Amplify logo/header area if it exists */
+.amplify-authenticator__header {
+  display: none !important;
+}
+
+/* Fix input text selection color in dark mode */
+.amplify-input::selection {
+  background: rgba(13, 127, 242, 0.3);
+}
+
+.amplify-label {
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
 }
