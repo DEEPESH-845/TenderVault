@@ -18,7 +18,7 @@ Globals:
         TvAuthorizer:
           FunctionArn: !GetAtt TvAuthorizerFunction.Arn
           AuthorizerPayloadFormatVersion: 2.0
-          EnableSimpleResponses: true
+          EnableSimpleResponses: false
           Identity:
             Headers:
               - Authorization
