@@ -2,7 +2,7 @@
 # deploy-frontend.sh — Build and deploy frontend to S3 + invalidate CloudFront
 set -e
 
-STACK_NAME="${1:-tendervault}"
+STACK_NAME="${1:-TenderVault}"
 REGION="${2:-us-east-1}"
 
 echo "=== Fetching stack outputs ==="

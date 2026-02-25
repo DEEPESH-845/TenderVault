@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  STACK_NAME: tendervault
+  STACK_NAME: TenderVault
   AWS_REGION: us-east-1
 
 permissions:

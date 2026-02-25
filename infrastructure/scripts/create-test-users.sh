@@ -4,7 +4,7 @@
 
 set -e
 
-STACK_NAME="${1:-tendervault}"
+STACK_NAME="${1:-TenderVault}"
 REGION="${2:-us-east-1}"
 
 USER_POOL_ID=$(aws cloudformation describe-stacks \

@@ -4,6 +4,24 @@ Transform: AWS::Serverless-2016-10-31
 Description: TenderVault backend stack
 
 Globals:
+  HttpApi:
+    CorsConfiguration:
+      AllowMethods:
+        - "*"
+      AllowHeaders:
+        - "*"
+      AllowOrigins:
+        - "*"
+    Auth:
+      DefaultAuthorizer: TvAuthorizer
+      Authorizers:
+        TvAuthorizer:
+          FunctionArn: !GetAtt TvAuthorizerFunction.Arn
+          AuthorizerPayloadFormatVersion: 2.0
+          EnableSimpleResponses: true
+          Identity:
+            Headers:
+              - Authorization
   Function:
     Runtime: nodejs20.x
     Timeout: 15
@@ -105,6 +123,13 @@ Resources:
       GenerateSecret: false
 
 # ================= Lambdas =================
+
+  TvAuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/functions/authorizer/
+      Handler: index.handler
+      Role: !Ref LabRoleArn
 
   TvCreateTenderFunction:
     Type: AWS::Serverless::Function
