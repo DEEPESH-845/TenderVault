@@ -16,9 +16,9 @@ function Layout({ userInfo, onSignOut }: { userInfo: UserInfo | null; onSignOut:
   const location = useLocation();
 
   const roleBadge = {
-    'tv-admin': { label: 'Officer', className: 'bg-violet-100 text-violet-700 ring-1 ring-violet-200' },
-    'tv-bidder': { label: 'Bidder', className: 'bg-blue-100 text-blue-700 ring-1 ring-blue-200' },
-    'tv-evaluator': { label: 'Evaluator', className: 'bg-amber-100 text-amber-700 ring-1 ring-amber-200' },
+    'tv-admin': { label: 'Officer', className: 'bg-violet-100 text-violet-700 ring-1 ring-violet-200 dark:bg-violet-500/10 dark:text-violet-400 dark:ring-violet-500/20' },
+    'tv-bidder': { label: 'Bidder', className: 'bg-blue-100 text-blue-700 ring-1 ring-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:ring-blue-500/20' },
+    'tv-evaluator': { label: 'Evaluator', className: 'bg-amber-100 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/20' },
   };
 
   const badge = userInfo ? roleBadge[userInfo.role] : null;

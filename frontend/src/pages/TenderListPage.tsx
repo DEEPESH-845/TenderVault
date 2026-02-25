@@ -82,13 +82,13 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
         </div>
       ) : tenders.length === 0 ? (
         <div className="text-center py-20">
-          <div className="w-20 h-20 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center mb-5">
-            <svg className="w-10 h-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="w-20 h-20 mx-auto bg-gray-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-5">
+            <svg className="w-10 h-10 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
             </svg>
           </div>
-          <p className="text-lg font-semibold text-gray-700 mb-1">No tenders found</p>
-          <p className="text-sm text-gray-500">
+          <p className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-1">No tenders found</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">
             {userInfo?.role === 'tv-admin'
               ? 'Create your first tender to get started'
               : 'Check back later for new opportunities'}
@@ -107,8 +107,8 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
         <>
           <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setShowCreateModal(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 animate-fade-in">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Create New Tender</h2>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl dark:shadow-black/50 max-w-lg w-full p-6 animate-fade-in border border-transparent dark:border-slate-800">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Create New Tender</h2>
 
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
@@ -147,11 +147,11 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
                     onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                     required
                   />
-                  <p className="text-xs text-gray-400 mt-1">Must be at least 1 hour in the future</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Must be at least 1 hour in the future</p>
                 </div>
 
                 {createError && (
-                  <div className="p-3 bg-red-50 rounded-xl border border-red-100 text-sm text-red-700">
+                  <div className="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20 text-sm text-red-700 dark:text-red-400">
                     {createError}
                   </div>
                 )}
