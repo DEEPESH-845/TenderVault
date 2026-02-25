@@ -16,7 +16,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return (saved as Theme) || 'system';
   });
 
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('tv-theme');
+    if (saved === 'dark') return true;
+    if (saved === 'light') return false;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
