@@ -39,11 +39,11 @@ export async function handler(event, context) {
 
     // 3. Determine query strategy
     if (filterUserId) {
-      // Query GSI-1: userId-timestamp-index
+      // Query Generic GSI-1: User facet
       const params = {
-        indexName: 'userId-timestamp-index',
-        keyConditionExpression: 'userId = :uid',
-        expressionAttributeValues: { ':uid': filterUserId },
+        indexName: 'gsi1-index',
+        keyConditionExpression: 'gsi1pk = :pk',
+        expressionAttributeValues: { ':pk': `USER#${filterUserId}` },
         scanIndexForward: false,
         limit,
         exclusiveStartKey,
@@ -55,11 +55,11 @@ export async function handler(event, context) {
       }
       result = await queryItems(AUDIT_LOG_TABLE, params);
     } else if (filterTenderId) {
-      // Query GSI-2: tenderId-timestamp-index
+      // Query Generic GSI-2: Tender facet
       const params = {
-        indexName: 'tenderId-timestamp-index',
-        keyConditionExpression: 'tenderId = :tid',
-        expressionAttributeValues: { ':tid': filterTenderId },
+        indexName: 'gsi2-index',
+        keyConditionExpression: 'gsi2pk = :pk',
+        expressionAttributeValues: { ':pk': `TENDER#${filterTenderId}` },
         scanIndexForward: false,
         limit,
         exclusiveStartKey,

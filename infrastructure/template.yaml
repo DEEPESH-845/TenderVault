@@ -31,7 +31,7 @@ Globals:
       Variables:
         TENDERS_TABLE: !Ref TendersTable
         BIDS_TABLE: !Ref BidsTable
-        AUDIT_LOG_TABLE: !Ref AuditLogTable
+        AUDIT_LOG_TABLE: !Ref AuditLogTableV2
         BIDS_BUCKET: !Sub 'tv-bids-${Environment}-${AWS::AccountId}'
         USER_POOL_ID: !Ref UserPool
         USER_POOL_CLIENT_ID: !Ref UserPoolClient
@@ -115,37 +115,39 @@ Resources:
         - AttributeName: bidderId
           KeyType: RANGE
 
-  AuditLogTable:
+  AuditLogTableV2:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub 'tv-audit-log-${Environment}'
+      TableName: !Sub 'tv-audit-log-v2-${Environment}'
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: auditId
           AttributeType: S
-        - AttributeName: userId
+        - AttributeName: gsi1pk
           AttributeType: S
-        - AttributeName: tenderId
+        - AttributeName: gsi1sk
           AttributeType: S
-        - AttributeName: timestamp
+        - AttributeName: gsi2pk
+          AttributeType: S
+        - AttributeName: gsi2sk
           AttributeType: S
       KeySchema:
         - AttributeName: auditId
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: userId-timestamp-index
+        - IndexName: gsi1-index
           KeySchema:
-            - AttributeName: userId
+            - AttributeName: gsi1pk
               KeyType: HASH
-            - AttributeName: timestamp
+            - AttributeName: gsi1sk
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-        - IndexName: tenderId-timestamp-index
+        - IndexName: gsi2-index
           KeySchema:
-            - AttributeName: tenderId
+            - AttributeName: gsi2pk
               KeyType: HASH
-            - AttributeName: timestamp
+            - AttributeName: gsi2sk
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
@@ -229,12 +231,12 @@ Resources:
       Environment:
         Variables:
           TENDERS_TABLE: !Ref TendersTable
-          AUDIT_LOG_TABLE: !Ref AuditLogTable
+          AUDIT_LOG_TABLE: !Ref AuditLogTableV2
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TendersTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref AuditLogTable
+            TableName: !Ref AuditLogTableV2
       Events:
         Api:
           Type: HttpApi
