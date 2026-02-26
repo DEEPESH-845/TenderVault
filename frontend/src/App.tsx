@@ -1,10 +1,8 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react';
 import { BrowserRouter } from 'react-router-dom';
 import { AppRoutes } from './routes';
 import './services/auth'; // Initialize Amplify config
-import GridBackground from './components/GridBackground';
-import AnimatedCounter from './components/AnimatedCounter';
 import { useGSAP } from './hooks/useGSAP';
 import { gsap } from './lib/gsap';
 
@@ -16,7 +14,7 @@ function App() {
   // =========================================================================
   if (route === 'authenticated') {
     return (
-      <div className="min-h-screen w-full bg-slate-50 dark:bg-[#101922] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      <div className="min-h-screen w-full">
         <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
           <AppRoutes signOut={signOut} user={user} />
         </BrowserRouter>
@@ -31,102 +29,160 @@ function App() {
 }
 
 function LoginPage() {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const pageRef    = useRef<HTMLDivElement>(null);
+  const leftRef    = useRef<HTMLDivElement>(null);
+  const scanRef    = useRef<HTMLDivElement>(null);
+  const glyphsRef  = useRef<HTMLDivElement>(null);
+  const formRef    = useRef<HTMLDivElement>(null);
+
+  // Scanline animation — pure CSS would loop, GSAP gives us the precise feel
+  useEffect(() => {
+    if (!scanRef.current) return;
+    gsap.fromTo(
+      scanRef.current,
+      { top: '-4px' },
+      { top: '100%', duration: 4, ease: 'none', repeat: -1 }
+    );
+  }, []);
 
   useGSAP(() => {
-    // Hero text staggered entrance
-    const heroElements = heroRef.current?.querySelectorAll('[data-animate]');
-    if (heroElements?.length) {
-      gsap.fromTo(
-        heroElements,
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, duration: 0.8, stagger: 0.12, ease: 'power3.out', delay: 0.2 }
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+    // Left panel: stagger each heading word
+    const words = glyphsRef.current?.querySelectorAll('[data-word]');
+    if (words?.length) {
+      tl.fromTo(words,
+        { opacity: 0, y: 32, skewY: 2 },
+        { opacity: 1, y: 0, skewY: 0, duration: 0.9, stagger: 0.1 },
+        0.15
       );
     }
 
-    // Login card glassmorphism entrance
-    if (cardRef.current) {
-      gsap.fromTo(
-        cardRef.current,
-        { opacity: 0, y: 30, scale: 0.97 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'power3.out', delay: 0.4 }
+    // Right panel: form entrance
+    if (formRef.current) {
+      tl.fromTo(formRef.current,
+        { opacity: 0, x: 24 },
+        { opacity: 1, x: 0, duration: 0.8 },
+        0.35
       );
     }
   }, []);
 
   return (
-    <div className="bg-[#101922] font-sans text-slate-100 min-h-screen flex flex-col pt-0 relative">
-      {/* HEADER */}
-      <header className="flex items-center bg-transparent p-6 justify-between absolute top-0 w-full z-10">
-        <div className="flex items-center gap-2">
-           <div className="text-[#0d7ff2] flex h-10 w-10 shrink-0 items-center justify-center bg-[#0d7ff2]/10 rounded-lg">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+    <div ref={pageRef} className="login-root">
+      {/* ── SCANLINES TEXTURE (full page) ─────────────────── */}
+      <div className="login-scanlines" aria-hidden="true" />
+
+      {/* ══════════════════════════════════════════════════════
+          LAYOUT: two columns
+      ══════════════════════════════════════════════════════ */}
+      <div className="login-layout">
+
+        {/* ── LEFT PANEL ───────────────────────────────────── */}
+        <div ref={leftRef} className="login-left">
+          {/* Moving scan beam */}
+          <div ref={scanRef} className="login-beam" aria-hidden="true" />
+
+          {/* Corner accents */}
+          <span className="login-corner login-corner--tl" aria-hidden="true" />
+          <span className="login-corner login-corner--br" aria-hidden="true" />
+
+          {/* Background grid */}
+          <div className="login-grid-overlay" aria-hidden="true" />
+
+          {/* Content */}
+          <div ref={glyphsRef} className="login-left-content">
+
+            {/* Logo mark */}
+            <div className="login-logo-mark" data-word>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
-           </div>
-           <h2 className="text-slate-100 text-xl font-bold leading-tight tracking-tight">TenderVault</h2>
-        </div>
-      </header>
+              <span>TENDERVAULT</span>
+            </div>
 
-      {/* MAIN SPLIT SCREEN */}
-      <main className="flex-1 flex flex-col lg:flex-row relative">
+            {/* Large headline */}
+            <div className="login-headline">
+              <div data-word className="login-headline-word">Enterprise</div>
+              <div data-word className="login-headline-word login-headline-word--accent">Procurement,</div>
+              <div data-word className="login-headline-word">Secured.</div>
+            </div>
 
-        {/* LEFT NAVY/CYAN HERO */}
-        <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden" style={{ background: 'radial-gradient(circle at top right, #0d7ff233, transparent), linear-gradient(135deg, #101922 0%, #0a2e52 100%)' }}>
-          <GridBackground />
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#0d7ff2] rounded-full blur-[120px]"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-500 rounded-full blur-[120px]"></div>
+            {/* Sub copy */}
+            <p data-word className="login-sub">
+              The unified standard for high-stakes<br />
+              government contracting.
+            </p>
+
+            {/* Stats bar */}
+            <div data-word className="login-stats">
+              <div className="login-stat">
+                <span className="login-stat__value">99.9%</span>
+                <span className="login-stat__label">Uptime SLA</span>
+              </div>
+              <div className="login-stat-divider" aria-hidden="true" />
+              <div className="login-stat">
+                <span className="login-stat__value">AES-256</span>
+                <span className="login-stat__label">Encryption</span>
+              </div>
+              <div className="login-stat-divider" aria-hidden="true" />
+              <div className="login-stat">
+                <span className="login-stat__value">FedRAMP</span>
+                <span className="login-stat__label">Certified</span>
+              </div>
+            </div>
+
+            {/* Clearance badge */}
+            <div data-word className="login-clearance">
+              <span className="login-clearance__dot" aria-hidden="true" />
+              SYSTEM OPERATIONAL · CLEARANCE REQUIRED
+            </div>
           </div>
-          <div ref={heroRef} className="relative z-10 p-12 max-w-xl">
-             <h1 data-animate className="text-5xl font-bold text-white mb-6 leading-[1.1]">Enterprise Procurement, Secured.</h1>
-             <p data-animate className="text-slate-300 text-xl leading-relaxed">The unified standard for high-stakes government contracting and digital asset custody.</p>
-             <div data-animate className="mt-12 flex gap-8">
-                <div className="flex flex-col">
-                  <AnimatedCounter value={99.9} suffix="%" decimals={1} duration={2.5} className="text-3xl font-bold text-[#0d7ff2] tabular-nums" />
-                  <span className="text-slate-400 text-sm uppercase tracking-widest mt-1">Uptime</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-3xl font-bold text-[#0d7ff2]">AES-256</span>
-                  <span className="text-slate-400 text-sm uppercase tracking-widest mt-1">Encryption</span>
-                </div>
-             </div>
+        </div>
+
+        {/* ── RIGHT PANEL ──────────────────────────────────── */}
+        <div className="login-right">
+          <div ref={formRef} className="login-form-wrap">
+
+            {/* Mobile-only logo */}
+            <div className="login-mobile-logo" aria-label="TenderVault">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              <span>TENDERVAULT</span>
+            </div>
+
+            {/* Header */}
+            <div className="login-form-header">
+              <div className="login-form-eyebrow">SECURE ACCESS PORTAL</div>
+              <h2 className="login-form-title">Welcome Back</h2>
+              <p className="login-form-desc">
+                Authenticate with your enterprise credentials
+                to access the procurement platform.
+              </p>
+            </div>
+
+            {/* AWS Amplify widget — wrapped in card */}
+            <div className="login-form-card">
+              <div className="aws-amplify-wrapper w-full">
+                <Authenticator
+                  loginMechanisms={['email']}
+                  signUpAttributes={['email']}
+                  variation="default"
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="login-form-footer">
+              <span>Authorized users only · All actions are audited</span>
+              <span className="login-form-footer__copy">© 2024 TenderVault Systems Inc.</span>
+            </div>
+
           </div>
         </div>
 
-        {/* RIGHT LOGIN CONTAINER - Perfect Visual Centering */}
-        <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-white lg:bg-[#101922] w-full min-h-screen">
-
-           <div
-             ref={cardRef}
-             className="w-full max-w-[460px] p-6 sm:p-8 rounded-xl bg-white lg:bg-white/[0.03] lg:shadow-2xl border border-gray-200 lg:border-slate-800/50 flex flex-col items-center lg:backdrop-blur-2xl"
-           >
-              <div className="mb-6 w-full text-center lg:text-left">
-                 <h2 className="text-2xl font-bold text-slate-900 lg:text-white mb-2">Welcome Back</h2>
-                 <p className="text-slate-500 lg:text-slate-400 text-sm">Sign in with your enterprise credentials to access the platform.</p>
-              </div>
-
-              {/* AWS AMPLIFY AUTHENTICATOR WIDGET */}
-              <div className="aws-amplify-wrapper w-full flex justify-center">
-                 <Authenticator
-                   loginMechanisms={['email']}
-                   signUpAttributes={['email']}
-                   variation="default"
-                 />
-              </div>
-
-              <div className="mt-6 w-full text-center border-t border-slate-200 lg:border-slate-800/50 pt-6">
-                 <p className="text-xs text-slate-500">
-                     Authorized users only. All actions are audited.
-                     <br className="my-1"/>
-                     © 2024 TenderVault Systems Inc. FedRAMP High.
-                 </p>
-              </div>
-
-           </div>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }

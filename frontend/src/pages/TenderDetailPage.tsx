@@ -51,14 +51,14 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
 
   const fetchBids = useCallback(async () => {
     if (!tenderId || !userInfo) return;
-    if (userInfo.role === 'tv-bidder') return; // Bidders can't list bids
+    if (userInfo.role === 'tv-bidder') return;
     try {
       setBidsError(null);
       const data = await listBids(tenderId);
       setBids(data);
     } catch (err) {
       if (isTenderLockedError(err)) {
-        setBidsError(null); // Expected when locked, the overlay handles this
+        setBidsError(null);
       } else {
         setBidsError(getErrorMessage(err));
       }
@@ -157,200 +157,223 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <div className="skeleton h-8 w-64 mb-4" />
-        <div className="skeleton h-4 w-96 mb-6" />
-        <div className="skeleton h-64 rounded-2xl" />
+      <div className="td-wrap">
+        <div className="db-skeleton" style={{ height: '24px', width: '180px', marginBottom: '1.5rem', borderRadius: '4px' }} />
+        <div className="db-skeleton" style={{ height: '220px', borderRadius: '10px', marginBottom: '1rem' }} />
+        <div className="db-skeleton" style={{ height: '160px', borderRadius: '10px' }} />
       </div>
     );
   }
 
   if (error || !tender) {
     return (
-      <div className="max-w-4xl mx-auto text-center py-20">
-        <div className="w-16 h-16 mx-auto bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-red-500 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <div className="td-wrap td-error-state">
+        <div className="td-error-icon">
+          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
           </svg>
         </div>
-        <p className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-2">{error || 'Tender not found'}</p>
-        <Link to="/" className="btn-secondary mt-4 inline-flex">← Back to Tenders</Link>
+        <p className="td-error-title">{error || 'Tender not found'}</p>
+        <Link to="/" className="td-back-link">← Back to Tenders</Link>
       </div>
     );
   }
 
-  const statusBadge = {
-    OPEN: 'badge-open',
-    CLOSED: 'badge-closed',
-    ARCHIVED: 'badge-archived',
+  const statusColors = {
+    OPEN:     { bar: 'td-status-bar--open',     badge: 'td-badge--open',     dot: 'td-dot--open' },
+    CLOSED:   { bar: 'td-status-bar--closed',   badge: 'td-badge--closed',   dot: 'td-dot--closed' },
+    ARCHIVED: { bar: 'td-status-bar--archived', badge: 'td-badge--archived', dot: 'td-dot--archived' },
   };
+  const sc = statusColors[tender.status];
 
   return (
     <AnimatedPage>
-      <div className="max-w-4xl mx-auto">
-        {/* Breadcrumb */}
-        <div className="mb-6">
-          <Link to="/" className="text-sm text-vault-600 hover:text-vault-700 dark:text-vault-400 dark:hover:text-vault-300 flex items-center gap-1">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <div className="td-wrap">
+
+        {/* ── Breadcrumb ──────────────────────────────────────── */}
+        <div className="td-breadcrumb">
+          <Link to="/" className="td-breadcrumb__link">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
-            Back to Tenders
+            Tenders
           </Link>
+          <span className="td-breadcrumb__sep">/</span>
+          <span className="td-breadcrumb__current">{tender.tenderId.slice(0, 8)}…</span>
         </div>
 
-        {/* Tender Header */}
+        {/* ── Tender Header Card ──────────────────────────────── */}
         <ScrollReveal>
-          <div className="card mb-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <span className={statusBadge[tender.status]}>{tender.status}</span>
-                {userInfo?.role === 'tv-admin' && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={openEditModal}
-                      className="text-xs font-medium text-vault-600 dark:text-vault-400 bg-vault-50 dark:bg-vault-500/10 hover:bg-vault-100 dark:hover:bg-vault-500/20 px-3 py-1 rounded-full border border-vault-200 dark:border-vault-500/20 transition-colors flex items-center gap-1"
-                      title="Edit Tender Details"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                      </svg>
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => { setDeleteError(null); setShowDeleteModal(true); }}
-                      className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 px-3 py-1 rounded-full border border-red-200 dark:border-red-500/20 transition-colors flex items-center gap-1"
-                      title="Permanently Delete Tender"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                      </svg>
-                      Delete
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-gray-400 dark:text-slate-500">Deadline</p>
-                <p className="text-sm font-semibold text-gray-700 dark:text-slate-200 font-mono">
-                  {format(new Date(tender.deadline), 'MMM dd, yyyy HH:mm')}
-                </p>
-              </div>
-            </div>
+          <div className="td-card">
+            {/* Status bar */}
+            <div className={`td-status-bar ${sc.bar}`} aria-hidden="true" />
 
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{tender.title}</h1>
-            <p className="text-gray-600 dark:text-slate-300 whitespace-pre-wrap">{tender.description}</p>
+            <div className="td-card__inner">
+              {/* Top meta row */}
+              <div className="td-card__meta">
+                <div className="td-card__meta-left">
+                  <span className={`td-dot ${sc.dot}`} aria-hidden="true" />
+                  <span className={`td-badge ${sc.badge}`}>{tender.status}</span>
+                  {userInfo?.role === 'tv-admin' && (
+                    <div className="td-admin-actions">
+                      <button onClick={openEditModal} className="td-btn-edit" title="Edit Tender">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                        </svg>
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => { setDeleteError(null); setShowDeleteModal(true); }}
+                        className="td-btn-delete"
+                        title="Delete Tender"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="td-card__deadline">
+                  <span className="td-card__deadline-label">DEADLINE</span>
+                  <span className="td-card__deadline-value">
+                    {format(new Date(tender.deadline), 'MMM dd, yyyy HH:mm')}
+                  </span>
+                </div>
+              </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-800 flex items-center gap-4 text-xs text-gray-400 dark:text-slate-500">
-              <span>Created: {format(new Date(tender.createdAt), 'MMM dd, yyyy HH:mm')}</span>
-              <span>ID: <code className="font-mono">{tender.tenderId.slice(0, 12)}...</code></span>
+              {/* Title */}
+              <h1 className="td-title">{tender.title}</h1>
+
+              {/* Description */}
+              <p className="td-desc">{tender.description}</p>
+
+              {/* Footer metadata */}
+              <div className="td-card__foot">
+                <span className="td-meta-item">
+                  Created: <code className="td-mono">{format(new Date(tender.createdAt), 'MMM dd, yyyy HH:mm')}</code>
+                </span>
+                <span className="td-meta-item">
+                  ID: <code className="td-mono">{tender.tenderId.slice(0, 12)}…</code>
+                </span>
+              </div>
             </div>
           </div>
         </ScrollReveal>
 
-        {/* Role-specific content */}
+        {/* ── Bidder: Submit Bid ──────────────────────────────── */}
         {userInfo?.role === 'tv-bidder' && tender.status === 'OPEN' && isLocked && (
           <ScrollReveal delay={0.1}>
-            <div className="card">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <svg className="w-5 h-5 text-vault-600 dark:text-vault-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                </svg>
-                Submit Your Bid
-              </h2>
-              <BidUploadPanel tenderId={tender.tenderId} onUploadComplete={fetchTender} />
+            <div className="td-card">
+              <div className="td-card__inner">
+                <h2 className="td-section-title">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  </svg>
+                  Submit Your Bid
+                </h2>
+                <BidUploadPanel tenderId={tender.tenderId} onUploadComplete={fetchTender} />
+              </div>
             </div>
           </ScrollReveal>
         )}
 
+        {/* ── Bidder: Deadline Passed ─────────────────────────── */}
         {userInfo?.role === 'tv-bidder' && !isLocked && (
-          <div className="card text-center py-8 animate-fade-in">
-            <div className="w-12 h-12 mx-auto bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center mb-3">
-              <svg className="w-6 h-6 text-red-500 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          <div className="td-card td-card--centered animate-fade-in">
+            <div className="td-card__inner td-deadline-passed">
+              <div className="td-deadline-icon">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p className="td-deadline-title">Submission Period Ended</p>
+              <p className="td-deadline-sub">The deadline for this tender has passed</p>
             </div>
-            <p className="font-semibold text-gray-900 dark:text-white mb-1">Submission Period Ended</p>
-            <p className="text-sm text-gray-500 dark:text-slate-400">The deadline for this tender has passed</p>
           </div>
         )}
 
-        {/* Bid List (Admin/Evaluator) */}
+        {/* ── Admin/Evaluator: Bid List ───────────────────────── */}
         {(userInfo?.role === 'tv-admin' || userInfo?.role === 'tv-evaluator') && (
           <ScrollReveal delay={0.15}>
-            <div className="card relative overflow-hidden">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <svg className="w-5 h-5 text-vault-600 dark:text-vault-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                </svg>
-                Submitted Bids
-              </h2>
+            <div className="td-card" style={{ position: 'relative', overflow: 'hidden' }}>
+              <div className="td-card__inner">
+                <h2 className="td-section-title">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                  Submitted Bids
+                </h2>
 
-              {isLocked && (
-                <TimeLockOverlay deadline={tender.deadline} onUnlock={handleUnlock} />
-              )}
+                {isLocked && (
+                  <TimeLockOverlay deadline={tender.deadline} onUnlock={handleUnlock} />
+                )}
 
-              {!isLocked && (
-                <>
-                  {bidsError && (
-                    <div className="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20 text-sm text-red-700 dark:text-red-400 mb-4">
-                      {bidsError}
-                    </div>
-                  )}
-                  <BidListPanel
-                    tenderId={tender.tenderId}
-                    bids={bids}
-                    userInfo={userInfo}
-                    onRefresh={fetchBids}
-                  />
-                </>
-              )}
+                {!isLocked && (
+                  <>
+                    {bidsError && (
+                      <div className="td-alert td-alert--error">{bidsError}</div>
+                    )}
+                    <BidListPanel
+                      tenderId={tender.tenderId}
+                      bids={bids}
+                      userInfo={userInfo}
+                      onRefresh={fetchBids}
+                    />
+                  </>
+                )}
+              </div>
             </div>
           </ScrollReveal>
         )}
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* ── Delete Confirmation Modal ───────────────────────── */}
       {showDeleteModal && (
         <>
-          <div ref={deleteBackdropRef} className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => !deleting && setShowDeleteModal(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div ref={deleteModalRef} className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl dark:shadow-black/50 max-w-md w-full p-6 border border-transparent dark:border-slate-800">
-              <div className="w-14 h-14 mx-auto bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-7 h-7 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div
+            ref={deleteBackdropRef}
+            className="db-modal-backdrop"
+            onClick={() => !deleting && setShowDeleteModal(false)}
+          />
+          <div className="db-modal-wrap">
+            <div ref={deleteModalRef} className="db-modal td-delete-modal">
+              <div className="td-delete-modal__icon">
+                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white text-center mb-2">Delete Tender</h3>
-              <p className="text-sm text-gray-500 dark:text-slate-400 text-center mb-1">
+              <div className="td-delete-modal__eyebrow">DESTRUCTIVE ACTION</div>
+              <h3 className="td-delete-modal__title">Delete Tender</h3>
+              <p className="td-delete-modal__body">
                 Are you sure you want to permanently delete
               </p>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white text-center mb-4 line-clamp-2">
-                "{tender.title}"?
-              </p>
-              <p className="text-xs text-red-600 dark:text-red-400 text-center mb-6">
+              <p className="td-delete-modal__tender-name">"{tender.title}"?</p>
+              <p className="td-delete-modal__warning">
                 This action cannot be undone. All associated data will be lost.
               </p>
 
               {deleteError && (
-                <div className="mb-4 p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20 text-sm text-red-700 dark:text-red-400">
+                <div className="td-alert td-alert--error" style={{ marginBottom: '1rem' }}>
                   {deleteError}
                 </div>
               )}
 
-              <div className="flex gap-3">
+              <div className="td-delete-modal__actions">
                 <button
                   onClick={() => setShowDeleteModal(false)}
                   disabled={deleting}
-                  className="btn-secondary flex-1"
+                  className="db-btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="btn-danger flex-1"
+                  className="td-btn-danger"
                 >
-                  {deleting ? 'Deleting...' : 'Delete Permanently'}
+                  {deleting ? 'Deleting…' : 'Delete Permanently'}
                 </button>
               </div>
             </div>
@@ -358,20 +381,39 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
         </>
       )}
 
-      {/* Edit Tender Modal */}
+      {/* ── Edit Tender Modal ───────────────────────────────── */}
       {showEditModal && (
         <>
-          <div ref={editBackdropRef} className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => !editing && setShowEditModal(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div ref={editModalRef} className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl dark:shadow-black/50 max-w-lg w-full p-6 border border-transparent dark:border-slate-800">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Edit Tender</h2>
+          <div
+            ref={editBackdropRef}
+            className="db-modal-backdrop"
+            onClick={() => !editing && setShowEditModal(false)}
+          />
+          <div className="db-modal-wrap">
+            <div ref={editModalRef} className="db-modal">
 
-              <form onSubmit={handleEdit} className="space-y-4">
+              <div className="db-modal__header">
                 <div>
-                  <label className="label">Title</label>
+                  <div className="db-modal__eyebrow">PROCUREMENT OFFICER</div>
+                  <h2 className="db-modal__title">Edit Tender</h2>
+                </div>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="db-modal__close"
+                  aria-label="Close"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleEdit} className="db-modal__form">
+                <div className="db-field">
+                  <label className="db-field__label">Title</label>
                   <input
                     type="text"
-                    className="input"
+                    className="db-field__input"
                     value={editFormData.title}
                     onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
                     required
@@ -380,10 +422,10 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
                   />
                 </div>
 
-                <div>
-                  <label className="label">Description</label>
+                <div className="db-field">
+                  <label className="db-field__label">Description</label>
                   <textarea
-                    className="input min-h-[150px]"
+                    className="db-field__input db-field__input--textarea"
                     value={editFormData.description}
                     onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
                     required
@@ -392,11 +434,11 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
                   />
                 </div>
 
-                <div>
-                  <label className="label">Submission Deadline</label>
+                <div className="db-field">
+                  <label className="db-field__label">Submission Deadline</label>
                   <input
                     type="datetime-local"
-                    className="input"
+                    className="db-field__input"
                     value={editFormData.deadline}
                     onChange={(e) => setEditFormData({ ...editFormData, deadline: e.target.value })}
                     required
@@ -404,26 +446,32 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
                 </div>
 
                 {editError && (
-                  <div className="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20 text-sm text-red-700 dark:text-red-400">
-                    {editError}
-                  </div>
+                  <div className="db-form-error">{editError}</div>
                 )}
 
-                <div className="flex justify-end gap-3 pt-2">
+                <div className="db-modal__actions">
                   <button
                     type="button"
                     onClick={() => setShowEditModal(false)}
                     disabled={editing}
-                    className="btn-secondary"
+                    className="db-btn-secondary"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={editing}
-                    className="btn-primary"
+                    className="db-btn-submit"
                   >
-                    {editing ? 'Saving...' : 'Save Changes'}
+                    {editing ? (
+                      <span className="db-btn-submit__loading">
+                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                        </svg>
+                        Saving…
+                      </span>
+                    ) : 'Save Changes'}
                   </button>
                 </div>
               </form>

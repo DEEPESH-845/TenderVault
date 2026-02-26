@@ -75,69 +75,123 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
 
   return (
     <AnimatedPage>
-      {/* Page Header */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h1 className="page-header">Tenders</h1>
-          <p className="page-subtitle">
+      {/* ── Page Header ─────────────────────────────────── */}
+      <div className="db-page-header">
+        <div className="db-page-header__left">
+          <div className="db-page-header__eyebrow">PROCUREMENT REGISTRY</div>
+          <h1 className="db-page-header__title">Tenders</h1>
+          <p className="db-page-header__sub">
             {userInfo?.role === 'tv-admin' && 'Manage all tenders and procurement processes'}
             {userInfo?.role === 'tv-bidder' && 'Browse and submit bids for open tenders'}
             {userInfo?.role === 'tv-evaluator' && 'Review submitted bids after tender closing'}
           </p>
         </div>
-        {userInfo?.role === 'tv-admin' && (
-          <button onClick={() => setShowCreateModal(true)} className="btn-primary gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            New Tender
-          </button>
-        )}
+        <div className="db-page-header__right">
+          {userInfo?.role === 'tv-admin' && (
+            <button onClick={() => setShowCreateModal(true)} className="db-btn-create">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              New Tender
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Tender Grid */}
+      {/* ── Stats Strip (admin only) ─────────────────────── */}
+      {userInfo?.role === 'tv-admin' && !loading && tenders.length > 0 && (
+        <div className="db-stats-strip">
+          <div className="db-stat-pill">
+            <span className="db-stat-pill__value">{tenders.length}</span>
+            <span className="db-stat-pill__label">Total</span>
+          </div>
+          <div className="db-stat-divider" />
+          <div className="db-stat-pill">
+            <span className="db-stat-pill__value db-stat-pill__value--open">
+              {tenders.filter(t => t.status === 'OPEN').length}
+            </span>
+            <span className="db-stat-pill__label">Open</span>
+          </div>
+          <div className="db-stat-divider" />
+          <div className="db-stat-pill">
+            <span className="db-stat-pill__value db-stat-pill__value--closed">
+              {tenders.filter(t => t.status === 'CLOSED').length}
+            </span>
+            <span className="db-stat-pill__label">Closed</span>
+          </div>
+          <div className="db-stat-divider" />
+          <div className="db-stat-pill">
+            <span className="db-stat-pill__value">
+              {tenders.filter(t => t.status === 'ARCHIVED').length}
+            </span>
+            <span className="db-stat-pill__label">Archived</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Tender Grid ─────────────────────────────────── */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="db-grid">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="skeleton h-48 rounded-2xl" />
+            <div key={i} className="db-skeleton" />
           ))}
         </div>
       ) : tenders.length === 0 ? (
-        <div className="text-center py-20 animate-fade-in">
-          <div className="w-20 h-20 mx-auto bg-gray-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-5">
-            <svg className="w-10 h-10 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <div className="db-empty">
+          <div className="db-empty__icon">
+            <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
             </svg>
           </div>
-          <p className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-1">No tenders found</p>
-          <p className="text-sm text-gray-500 dark:text-slate-400">
+          <p className="db-empty__title">No tenders found</p>
+          <p className="db-empty__sub">
             {userInfo?.role === 'tv-admin'
               ? 'Create your first tender to get started'
               : 'Check back later for new opportunities'}
           </p>
         </div>
       ) : (
-        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div ref={gridRef} className="db-grid">
           {tenders.map((tender) => (
             <TenderCard key={tender.tenderId} tender={tender} userInfo={userInfo} />
           ))}
         </div>
       )}
 
-      {/* Create Tender Modal */}
+      {/* ── Create Tender Modal ──────────────────────────── */}
       {showCreateModal && (
         <>
-          <div ref={modalBackdropRef} className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setShowCreateModal(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div ref={modalRef} className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl dark:shadow-black/50 max-w-lg w-full p-6 border border-transparent dark:border-slate-800">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Create New Tender</h2>
+          <div
+            ref={modalBackdropRef}
+            className="db-modal-backdrop"
+            onClick={() => setShowCreateModal(false)}
+          />
+          <div className="db-modal-wrap">
+            <div ref={modalRef} className="db-modal">
 
-              <form onSubmit={handleCreate} className="space-y-4">
+              {/* Modal header */}
+              <div className="db-modal__header">
                 <div>
-                  <label className="label">Title</label>
+                  <div className="db-modal__eyebrow">PROCUREMENT OFFICER</div>
+                  <h2 className="db-modal__title">New Tender</h2>
+                </div>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="db-modal__close"
+                  aria-label="Close"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleCreate} className="db-modal__form">
+                <div className="db-field">
+                  <label className="db-field__label">Title</label>
                   <input
                     type="text"
-                    className="input"
+                    className="db-field__input"
                     placeholder="Government IT Infrastructure Upgrade"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -147,10 +201,10 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
                   />
                 </div>
 
-                <div>
-                  <label className="label">Description</label>
+                <div className="db-field">
+                  <label className="db-field__label">Description</label>
                   <textarea
-                    className="input min-h-[100px]"
+                    className="db-field__input db-field__input--textarea"
                     placeholder="Detailed description of the tender requirements..."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -160,38 +214,46 @@ export default function TenderListPage({ userInfo }: TenderListPageProps) {
                   />
                 </div>
 
-                <div>
-                  <label className="label">Submission Deadline</label>
+                <div className="db-field">
+                  <label className="db-field__label">Submission Deadline</label>
                   <input
                     type="datetime-local"
-                    className="input"
+                    className="db-field__input"
                     value={formData.deadline}
                     onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                     required
                   />
-                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Must be in the future</p>
+                  <p className="db-field__hint">Must be set in the future</p>
                 </div>
 
                 {createError && (
-                  <div className="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20 text-sm text-red-700 dark:text-red-400">
+                  <div className="db-form-error">
                     {createError}
                   </div>
                 )}
 
-                <div className="flex justify-end gap-3 pt-2">
+                <div className="db-modal__actions">
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="btn-secondary"
+                    className="db-btn-secondary"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={creating}
-                    className="btn-primary"
+                    className="db-btn-submit"
                   >
-                    {creating ? 'Creating...' : 'Create Tender'}
+                    {creating ? (
+                      <span className="db-btn-submit__loading">
+                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                        </svg>
+                        Creating...
+                      </span>
+                    ) : 'Create Tender'}
                   </button>
                 </div>
               </form>
