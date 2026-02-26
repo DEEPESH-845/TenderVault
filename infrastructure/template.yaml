@@ -92,7 +92,7 @@ Resources:
             ExposedHeaders:
               - ETag
               - Content-Type
-            MaxAgeSeconds: 3000
+            MaxAge: 3000
       NotificationConfiguration:
         LambdaConfigurations:
           - Event: 's3:ObjectCreated:*'
