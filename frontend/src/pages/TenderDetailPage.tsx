@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { isPast, format } from 'date-fns';
-import { getTender, listBids, getErrorMessage, isTenderLockedError, deleteTender } from '../services/api';
+import { getTender, listBids, getErrorMessage, isTenderLockedError, deleteTender, updateTender } from '../services/api';
 import type { Tender, Bid, UserInfo } from '../services/types';
 import BidUploadPanel from '../components/BidUploadPanel';
 import BidListPanel from '../components/BidListPanel';
@@ -28,6 +28,12 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const deleteModalRef = useRef<HTMLDivElement>(null);
   const deleteBackdropRef = useRef<HTMLDivElement>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState({ title: '', description: '', deadline: '' });
+  const editModalRef = useRef<HTMLDivElement>(null);
+  const editBackdropRef = useRef<HTMLDivElement>(null);
 
   const fetchTender = useCallback(async () => {
     if (!tenderId) return;
@@ -88,6 +94,37 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
     }
   };
 
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tenderId) return;
+    setEditing(true);
+    setEditError(null);
+    try {
+      const updated = await updateTender(tenderId, {
+        title: editFormData.title,
+        description: editFormData.description,
+        deadline: new Date(editFormData.deadline).toISOString(),
+      });
+      setTender(updated);
+      setShowEditModal(false);
+    } catch (err) {
+      setEditError(getErrorMessage(err));
+    } finally {
+      setEditing(false);
+    }
+  };
+
+  const openEditModal = () => {
+    if (!tender) return;
+    setEditFormData({
+      title: tender.title,
+      description: tender.description,
+      deadline: format(new Date(tender.deadline), "yyyy-MM-dd'T'HH:mm"),
+    });
+    setEditError(null);
+    setShowEditModal(true);
+  };
+
   // Animate delete modal on open
   useEffect(() => {
     if (!showDeleteModal) return;
@@ -102,6 +139,21 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
       );
     }
   }, [showDeleteModal]);
+
+  // Animate edit modal on open
+  useEffect(() => {
+    if (!showEditModal) return;
+    if (editBackdropRef.current) {
+      gsap.fromTo(editBackdropRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+    }
+    if (editModalRef.current) {
+      gsap.fromTo(
+        editModalRef.current,
+        { opacity: 0, scale: 0.95, y: 20 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'power3.out', delay: 0.1 }
+      );
+    }
+  }, [showEditModal]);
 
   if (loading) {
     return (
@@ -153,16 +205,28 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
               <div className="flex items-center gap-3">
                 <span className={statusBadge[tender.status]}>{tender.status}</span>
                 {userInfo?.role === 'tv-admin' && (
-                  <button
-                    onClick={() => { setDeleteError(null); setShowDeleteModal(true); }}
-                    className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 px-3 py-1 rounded-full border border-red-200 dark:border-red-500/20 transition-colors flex items-center gap-1"
-                    title="Permanently Delete Tender"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                    </svg>
-                    Delete
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={openEditModal}
+                      className="text-xs font-medium text-vault-600 dark:text-vault-400 bg-vault-50 dark:bg-vault-500/10 hover:bg-vault-100 dark:hover:bg-vault-500/20 px-3 py-1 rounded-full border border-vault-200 dark:border-vault-500/20 transition-colors flex items-center gap-1"
+                      title="Edit Tender Details"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                      </svg>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => { setDeleteError(null); setShowDeleteModal(true); }}
+                      className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 px-3 py-1 rounded-full border border-red-200 dark:border-red-500/20 transition-colors flex items-center gap-1"
+                      title="Permanently Delete Tender"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
                 )}
               </div>
               <div className="text-right">
@@ -289,6 +353,80 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
                   {deleting ? 'Deleting...' : 'Delete Permanently'}
                 </button>
               </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Edit Tender Modal */}
+      {showEditModal && (
+        <>
+          <div ref={editBackdropRef} className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => !editing && setShowEditModal(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div ref={editModalRef} className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl dark:shadow-black/50 max-w-lg w-full p-6 border border-transparent dark:border-slate-800">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Edit Tender</h2>
+
+              <form onSubmit={handleEdit} className="space-y-4">
+                <div>
+                  <label className="label">Title</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={editFormData.title}
+                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                    required
+                    minLength={3}
+                    maxLength={200}
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Description</label>
+                  <textarea
+                    className="input min-h-[150px]"
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                    required
+                    minLength={10}
+                    maxLength={2000}
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Submission Deadline</label>
+                  <input
+                    type="datetime-local"
+                    className="input"
+                    value={editFormData.deadline}
+                    onChange={(e) => setEditFormData({ ...editFormData, deadline: e.target.value })}
+                    required
+                  />
+                </div>
+
+                {editError && (
+                  <div className="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20 text-sm text-red-700 dark:text-red-400">
+                    {editError}
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    disabled={editing}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={editing}
+                    className="btn-primary"
+                  >
+                    {editing ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </>

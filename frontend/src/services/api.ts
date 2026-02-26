@@ -68,6 +68,18 @@ export async function deleteTender(tenderId: string): Promise<void> {
     await api.delete(`/tenders/${tenderId}`);
 }
 
+export async function updateTender(
+    tenderId: string,
+    body: {
+        title?: string;
+        description?: string;
+        deadline?: string;
+    }
+): Promise<Tender> {
+    const { data } = await api.put<Tender>(`/tenders/${tenderId}`, body);
+    return data;
+}
+
 // ===== Bid Endpoints =====
 
 export async function generateUploadUrl(

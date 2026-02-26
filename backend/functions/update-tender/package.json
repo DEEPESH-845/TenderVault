@@ -1,0 +1,8 @@
+{
+    "name": "tv-update-tender",
+    "version": "1.0.0",
+    "description": "Update a tender",
+    "main": "index.mjs",
+    "type": "module",
+    "dependencies": {}
+}

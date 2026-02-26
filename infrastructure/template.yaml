@@ -270,6 +270,28 @@ Resources:
             Path: /tenders/{tenderId}
             Method: DELETE
 
+  TvUpdateTenderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/
+      Handler: functions/update-tender/index.handler
+      Role: !Ref LabRoleArn
+      Environment:
+        Variables:
+          TENDERS_TABLE: !Ref TendersTable
+          AUDIT_LOG_TABLE: !Ref AuditLogTableV2
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TendersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AuditLogTableV2
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /tenders/{tenderId}
+            Method: PUT
+
   TvGenerateUploadUrlFunction:
     Type: AWS::Serverless::Function
     Properties:

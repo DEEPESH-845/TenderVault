@@ -44,6 +44,62 @@ export function validateTenderBody(body) {
 }
 
 /**
+ * Validate tender update request body.
+ * @param {object} body
+ * @returns {{ title?: string, description?: string, deadline?: string }} Validated body
+ * @throws {AppError} VALIDATION_ERROR with fields array
+ */
+export function validateUpdateTenderBody(body) {
+  const errors = [];
+  const validated = {};
+
+  if (body.title !== undefined) {
+    if (typeof body.title !== 'string') {
+      errors.push({ field: 'title', message: 'Title must be a string' });
+    } else if (body.title.length < 3 || body.title.length > 200) {
+      errors.push({ field: 'title', message: 'Title must be 3-200 characters' });
+    } else {
+      validated.title = body.title.trim();
+    }
+  }
+
+  if (body.description !== undefined) {
+    if (typeof body.description !== 'string') {
+      errors.push({ field: 'description', message: 'Description must be a string' });
+    } else if (body.description.length < 10 || body.description.length > 2000) {
+      errors.push({ field: 'description', message: 'Description must be 10-2000 characters' });
+    } else {
+      validated.description = body.description.trim();
+    }
+  }
+
+  if (body.deadline !== undefined) {
+    if (typeof body.deadline !== 'string') {
+      errors.push({ field: 'deadline', message: 'Deadline must be an ISO 8601 string' });
+    } else {
+      const deadlineDate = new Date(body.deadline);
+      if (isNaN(deadlineDate.getTime())) {
+        errors.push({ field: 'deadline', message: 'Deadline must be a valid ISO 8601 datetime' });
+      } else if (deadlineDate.getTime() <= Date.now()) {
+        errors.push({ field: 'deadline', message: 'Deadline must be in the future' });
+      } else {
+        validated.deadline = body.deadline;
+      }
+    }
+  }
+
+  if (Object.keys(validated).length === 0 && errors.length === 0) {
+    errors.push({ field: 'body', message: 'At least one field (title, description, or deadline) must be provided' });
+  }
+
+  if (errors.length > 0) {
+    throw new AppError('VALIDATION_ERROR', 'Request validation failed', 400, errors);
+  }
+
+  return validated;
+}
+
+/**
  * Validate bid upload URL request body.
  * @param {object} body
  * @returns {{ fileName: string, contentType: string, fileSize: number }} Validated body
