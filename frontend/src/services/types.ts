@@ -19,6 +19,9 @@ export interface Bid {
     submittedAt: string;
     updatedAt: string;
     status: 'PENDING' | 'SUBMITTED' | 'DISQUALIFIED';
+    bidStatus?: 'UNDER_REVIEW' | 'SHORTLISTED' | 'DISQUALIFIED' | 'AWARDED';
+    bidderEmail?: string;
+    evaluationScores?: Record<string, { score: number; notes: string | null; scoredAt: string }>;
 }
 
 export interface AuditEvent {

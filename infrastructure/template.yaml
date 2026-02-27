@@ -37,6 +37,7 @@ Globals:
         USER_POOL_CLIENT_ID: !Ref UserPoolClient
         ENVIRONMENT: !Ref Environment
         ALLOWED_ORIGIN: !Ref AllowedOrigin
+        SES_FROM_EMAIL: !Sub 'noreply@${Environment}.tendervault.example.com'
 
 Parameters:
   Environment:
@@ -185,6 +186,19 @@ Resources:
 
   UserPool:
     Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub 'tv-userpool-${Environment}'
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+      EmailVerificationSubject: "Your TenderVault verification code"
+      EmailVerificationMessage: "Your TenderVault verification code is {####}. This code expires in 24 hours."
 
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
@@ -346,6 +360,32 @@ Resources:
           Properties:
             Path: /tenders/{tenderId}/bids
             Method: GET
+
+  TvUpdateBidStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/
+      Handler: functions/update-bid-status/index.handler
+      Role: !Ref LabRoleArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /tenders/{tenderId}/bids/{bidderId}/status
+            Method: PATCH
+
+  TvScoreBidFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/
+      Handler: functions/score-bid/index.handler
+      Role: !Ref LabRoleArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /tenders/{tenderId}/bids/{bidderId}/score
+            Method: PUT
 
   TvListVersionsFunction:
     Type: AWS::Serverless::Function

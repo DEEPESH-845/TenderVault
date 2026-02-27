@@ -88,8 +88,17 @@ export function validateUpdateTenderBody(body) {
     }
   }
 
+  if (body.status !== undefined) {
+    const ALLOWED_STATUSES = ['OPEN', 'CLOSED', 'ARCHIVED'];
+    if (!ALLOWED_STATUSES.includes(body.status)) {
+      errors.push({ field: 'status', message: 'Status must be one of: OPEN, CLOSED, ARCHIVED' });
+    } else {
+      validated.status = body.status;
+    }
+  }
+
   if (Object.keys(validated).length === 0 && errors.length === 0) {
-    errors.push({ field: 'body', message: 'At least one field (title, description, or deadline) must be provided' });
+    errors.push({ field: 'body', message: 'At least one field (title, description, deadline, or status) must be provided' });
   }
 
   if (errors.length > 0) {
@@ -149,4 +158,50 @@ export function validateRestoreVersionBody(body) {
     ]);
   }
   return { versionId: body.versionId };
+}
+
+/**
+ * Validate bid status update request body.
+ * @param {object} body
+ * @returns {{ bidStatus: string }} Validated body
+ * @throws {AppError} VALIDATION_ERROR
+ */
+export function validateBidStatusBody(body) {
+  const ALLOWED_STATUSES = ['UNDER_REVIEW', 'SHORTLISTED', 'DISQUALIFIED', 'AWARDED'];
+  if (!body.bidStatus || !ALLOWED_STATUSES.includes(body.bidStatus)) {
+    throw new AppError('VALIDATION_ERROR', 'Request validation failed', 400, [
+      { field: 'bidStatus', message: `bidStatus must be one of: ${ALLOWED_STATUSES.join(', ')}` },
+    ]);
+  }
+  return { bidStatus: body.bidStatus };
+}
+
+/**
+ * Validate bid score request body.
+ * @param {object} body
+ * @returns {{ score: number, notes?: string }} Validated body
+ * @throws {AppError} VALIDATION_ERROR
+ */
+export function validateScoreBody(body) {
+  const errors = [];
+
+  if (body.score === undefined || typeof body.score !== 'number' || !Number.isInteger(body.score)) {
+    errors.push({ field: 'score', message: 'score must be an integer' });
+  } else if (body.score < 1 || body.score > 10) {
+    errors.push({ field: 'score', message: 'score must be between 1 and 10' });
+  }
+
+  if (body.notes !== undefined) {
+    if (typeof body.notes !== 'string') {
+      errors.push({ field: 'notes', message: 'notes must be a string' });
+    } else if (body.notes.length > 500) {
+      errors.push({ field: 'notes', message: 'notes must be 500 characters or fewer' });
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new AppError('VALIDATION_ERROR', 'Request validation failed', 400, errors);
+  }
+
+  return { score: body.score, notes: body.notes?.trim() };
 }

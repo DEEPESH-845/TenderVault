@@ -31,7 +31,7 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
-  const [editFormData, setEditFormData] = useState({ title: '', description: '', deadline: '' });
+  const [editFormData, setEditFormData] = useState({ title: '', description: '', deadline: '', status: '' as 'OPEN' | 'CLOSED' | 'ARCHIVED' | '' });
   const editModalRef = useRef<HTMLDivElement>(null);
   const editBackdropRef = useRef<HTMLDivElement>(null);
 
@@ -104,6 +104,7 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
         title: editFormData.title,
         description: editFormData.description,
         deadline: new Date(editFormData.deadline).toISOString(),
+        ...(editFormData.status && { status: editFormData.status }),
       });
       setTender(updated);
       setShowEditModal(false);
@@ -120,6 +121,7 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
       title: tender.title,
       description: tender.description,
       deadline: format(new Date(tender.deadline), "yyyy-MM-dd'T'HH:mm"),
+      status: tender.status,
     });
     setEditError(null);
     setShowEditModal(true);
@@ -440,9 +442,24 @@ export default function TenderDetailPage({ userInfo }: TenderDetailPageProps) {
                     type="datetime-local"
                     className="db-field__input"
                     value={editFormData.deadline}
+                    min={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
                     onChange={(e) => setEditFormData({ ...editFormData, deadline: e.target.value })}
                     required
                   />
+                </div>
+
+                <div className="db-field">
+                  <label className="db-field__label">Status</label>
+                  <select
+                    className="db-field__input"
+                    value={editFormData.status}
+                    onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as 'OPEN' | 'CLOSED' | 'ARCHIVED' })}
+                  >
+                    <option value="OPEN">OPEN — accepting bids</option>
+                    <option value="CLOSED">CLOSED — bid window over</option>
+                    <option value="ARCHIVED">ARCHIVED — no longer active</option>
+                  </select>
+                  <p className="db-field__hint">Changing status is irreversible in most workflows</p>
                 </div>
 
                 {editError && (

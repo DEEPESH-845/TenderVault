@@ -74,6 +74,7 @@ export async function updateTender(
         title?: string;
         description?: string;
         deadline?: string;
+        status?: 'OPEN' | 'CLOSED' | 'ARCHIVED';
     }
 ): Promise<Tender> {
     const { data } = await api.put<Tender>(`/tenders/${tenderId}`, body);
@@ -124,6 +125,31 @@ export async function generateDownloadUrl(
 ): Promise<DownloadUrlResponse> {
     const { data } = await api.get<DownloadUrlResponse>(
         `/tenders/${tenderId}/bids/${bidderId}/download-url`
+    );
+    return data;
+}
+
+export async function updateBidStatus(
+    tenderId: string,
+    bidderId: string,
+    bidStatus: 'UNDER_REVIEW' | 'SHORTLISTED' | 'DISQUALIFIED' | 'AWARDED'
+): Promise<Bid> {
+    const { data } = await api.patch<Bid>(
+        `/tenders/${tenderId}/bids/${bidderId}/status`,
+        { bidStatus }
+    );
+    return data;
+}
+
+export async function scoreBid(
+    tenderId: string,
+    bidderId: string,
+    score: number,
+    notes?: string
+): Promise<Bid> {
+    const { data } = await api.put<Bid>(
+        `/tenders/${tenderId}/bids/${bidderId}/score`,
+        { score, notes }
     );
     return data;
 }

@@ -1,5 +1,6 @@
 import { updateItem } from '../../shared/db.mjs';
 import { writeAuditEvent } from '../../shared/audit.mjs';
+import { sendEmail } from '../../shared/email.mjs';
 
 const BIDS_TABLE = process.env.BIDS_TABLE;
 
@@ -29,7 +30,7 @@ export async function handler(event) {
 
       // 3. Update bid record in DynamoDB
       const now = new Date().toISOString();
-      await updateItem(
+      const updatedBidItem = await updateItem(
         BIDS_TABLE,
         { tenderId, bidderId },
         'SET #status = :status, currentVersionId = :vid, updatedAt = :now, fileSize = :size',
@@ -43,6 +44,14 @@ export async function handler(event) {
           '#status': 'status',
         }
       );
+
+      if (updatedBidItem?.bidderEmail) {
+        await sendEmail({
+          to: updatedBidItem.bidderEmail,
+          subject: 'TenderVault — Bid Submitted Successfully',
+          body: `Your bid document has been successfully submitted.\n\nTender ID: ${tenderId}\nFile: ${updatedBidItem.fileName}\nSubmitted at: ${now}\n\nLog in to TenderVault to track your submission status.`,
+        });
+      }
 
       // 4. Write audit event
       await writeAuditEvent({

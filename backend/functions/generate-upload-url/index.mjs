@@ -16,7 +16,7 @@ export async function handler(event, context) {
   const requestId = context.awsRequestId;
 
   try {
-    const { userId, groups, ipAddress, userAgent } = extractRequestContext(event);
+    const { userId, groups, email, ipAddress, userAgent } = extractRequestContext(event);
     const tenderId = event.pathParameters?.tenderId;
 
     // 1. Role check — tv-bidder only
@@ -85,6 +85,7 @@ export async function handler(event, context) {
       fileName,
       fileSize,
       status: 'PENDING',
+      bidderEmail: email,
       submittedAt: nowIso,
       updatedAt: nowIso,
     });
