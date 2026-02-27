@@ -61,12 +61,18 @@ export async function handler(event, context) {
       expressionAttributeValues[':deadline'] = validated.deadline;
     }
 
+    if (validated.status) {
+      updateExpression += ', #s = :status';
+      expressionAttributeValues[':status'] = validated.status;
+      expressionAttributeNames['#s'] = 'status';
+    }
+
     const updatedTender = await updateItem(
       TENDERS_TABLE,
       { tenderId },
       updateExpression,
       expressionAttributeValues,
-      expressionAttributeNames
+      Object.keys(expressionAttributeNames).length > 0 ? expressionAttributeNames : undefined
     );
 
     // 5. Write audit event
