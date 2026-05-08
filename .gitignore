@@ -21,6 +21,10 @@ build/
 *.swp
 *.swo
 *~
+.claude/
+.github/
+.qodo/
+
 
 # OS
 .DS_Store

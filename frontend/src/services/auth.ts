@@ -1,14 +1,13 @@
-import { Amplify } from 'aws-amplify';
-import { fetchAuthSession, signOut as amplifySignOut, getCurrentUser as amplifyGetCurrentUser } from 'aws-amplify/auth';
+import { Amplify, Auth } from 'aws-amplify';
+// Use Auth helpers from aws-amplify to perform authentication flows
 import type { UserInfo } from './types';
 
 // Configure Amplify with Cognito settings
 Amplify.configure({
     Auth: {
-        Cognito: {
-            userPoolId: import.meta.env.VITE_USER_POOL_ID || '',
-            userPoolClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID || '',
-        },
+        region: import.meta.env.VITE_AWS_REGION || 'us-east-1',
+        userPoolId: import.meta.env.VITE_USER_POOL_ID || '',
+        userPoolWebClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID || '',
     },
 });
 
@@ -17,8 +16,8 @@ Amplify.configure({
  */
 export async function getAccessToken(): Promise<string> {
     try {
-        const session = await fetchAuthSession();
-        const token = session.tokens?.accessToken?.toString();
+        const session = await Auth.currentSession();
+        const token = session.getAccessToken().getJwtToken();
         if (!token) throw new Error('No access token found');
         return token;
     } catch (error) {
@@ -32,14 +31,14 @@ export async function getAccessToken(): Promise<string> {
  */
 export async function getCurrentUser(): Promise<UserInfo> {
     try {
-        const session = await fetchAuthSession();
-        const user = await amplifyGetCurrentUser();
+        const session = await Auth.currentSession();
+        const user = await Auth.currentAuthenticatedUser();
 
-        const accessToken = session.tokens?.accessToken;
-        const payload = accessToken?.payload;
+        const token = session.getAccessToken().getJwtToken();
+        const payload = JSON.parse(atob(token.split('.')[1]));
         const groups = (payload?.['cognito:groups'] as string[]) || [];
         const email = (payload?.['email'] as string) || (payload?.['username'] as string) || user.username;
-        const userId = user.userId;
+        const userId = payload.sub || user.username;
 
         const role = groups.includes('tv-admin')
             ? 'tv-admin'
@@ -64,7 +63,7 @@ export async function getCurrentUser(): Promise<UserInfo> {
  */
 export async function signOut(): Promise<void> {
     try {
-        await amplifySignOut();
+        await Auth.signOut();
     } catch (error) {
         console.error('Failed to sign out:', error);
         throw error;
